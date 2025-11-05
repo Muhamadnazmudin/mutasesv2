@@ -3,13 +3,20 @@
   </div> <!-- End of Main Content -->
 
   <!-- Footer -->
-  <footer class="sticky-footer bg-white">
-    <div class="container my-auto">
-      <div class="copyright text-center my-auto">
-        <span>© <?= date('Y') ?> Mutases — Sistem Mutasi Siswa</span>
-      </div>
+<footer class="sticky-footer bg-white text-dark py-3 border-top">
+  <div class="container my-auto">
+    <div class="text-center my-auto small">
+      <span>
+        © <?= date('Y') ?> Created by 
+        <a href="https://www.profilsaya.my.id" target="_blank" class="text-decoration-none text-primary fw-bold">
+          M. Nazmudin
+        </a> 
+        — Sistem Mutasi Siswa
+      </span>
     </div>
-  </footer>
+  </div>
+</footer>
+
 </div> <!-- End of Content Wrapper -->
 </div> <!-- End of Page Wrapper -->
 
