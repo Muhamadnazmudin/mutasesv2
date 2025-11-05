@@ -1,9 +1,10 @@
+<!-- ================= SIDEBAR.PHP ================= -->
 <?php $role = $this->session->userdata('role_name'); ?>
 
 <!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-  <!-- Sidebar - Brand -->
+  <!-- Brand -->
   <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= site_url('dashboard') ?>">
     <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-exchange-alt"></i></div>
     <div class="sidebar-brand-text mx-3">MUTASES</div>
@@ -33,14 +34,12 @@
 
   <hr class="sidebar-divider d-none d-md-block">
 
-  <!-- Tombol Logout -->
   <div class="text-center mb-2">
     <a href="<?= site_url('auth/logout') ?>" class="btn btn-danger btn-sm w-75 shadow-sm">
       <i class="fas fa-sign-out-alt"></i> Logout
     </a>
   </div>
 
-  <!-- Sidebar Toggle -->
   <div class="text-center d-none d-md-inline mb-3">
     <button class="rounded-circle border-0 bg-white shadow-sm" id="sidebarToggle">
       <i class="fas fa-angle-double-left text-primary"></i>
@@ -57,14 +56,24 @@
 
     <!-- Topbar -->
     <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item dropdown no-arrow">
-          <span class="nav-link text-gray-800">
-            <?= $this->session->userdata('nama'); ?> |
-            <strong><?= ucfirst($this->session->userdata('role_name')); ?></strong>
-          </span>
-        </li>
-      </ul>
-    </nav>
+  <ul class="navbar-nav ml-auto align-items-center">
+    <!-- Tombol Toggle Mode -->
+    <li class="nav-item">
+      <button id="toggleMode" class="btn btn-sm btn-outline-secondary mr-3">
+        <i class="fas fa-moon"></i>
+      </button>
+    </li>
+    
+    <!-- User info -->
+    <li class="nav-item dropdown no-arrow">
+      <span class="nav-link text-gray-800">
+        <?= $this->session->userdata('nama'); ?> |
+        <strong><?= ucfirst($this->session->userdata('role_name')); ?></strong>
+      </span>
+    </li>
+  </ul>
+</nav>
 
+
+    <!-- Page Content -->
     <div class="container-fluid">

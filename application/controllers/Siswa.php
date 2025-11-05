@@ -11,8 +11,12 @@ class Siswa extends CI_Controller {
   }
 
   public function index($offset = 0) {
+    $this->load->library('pagination');
+
+    // Hitung total siswa aktif saja
+    $this->db->where('status', 'aktif');
     $config['base_url'] = site_url('siswa/index');
-    $config['total_rows'] = $this->Siswa_model->count_all();
+    $config['total_rows'] = $this->db->count_all_results('siswa');
     $config['per_page'] = 10;
     $config['uri_segment'] = 3;
 
@@ -27,9 +31,16 @@ class Siswa extends CI_Controller {
 
     $this->pagination->initialize($config);
 
-    $data['title'] = 'Data Siswa';
+    // Ambil data siswa aktif dengan limit & offset
+    $this->db->select('siswa.*, kelas.nama AS nama_kelas, tahun_ajaran.tahun AS tahun_ajaran');
+    $this->db->join('kelas', 'kelas.id = siswa.id_kelas', 'left');
+    $this->db->join('tahun_ajaran', 'tahun_ajaran.id = siswa.tahun_id', 'left');
+    $this->db->where('siswa.status', 'aktif');
+    $this->db->order_by('siswa.id', 'DESC');
+    $data['siswa'] = $this->db->get('siswa', $config['per_page'], $offset)->result();
+
+    $data['title'] = 'Data Siswa Aktif';
     $data['active'] = 'siswa';
-    $data['siswa'] = $this->Siswa_model->get_all($config['per_page'], $offset);
     $data['pagination'] = $this->pagination->create_links();
     $data['kelas'] = $this->Siswa_model->get_kelas_list();
     $data['tahun'] = $this->Siswa_model->get_tahun_list();
@@ -39,7 +50,8 @@ class Siswa extends CI_Controller {
     $this->load->view('templates/sidebar', $data);
     $this->load->view('siswa/index', $data);
     $this->load->view('templates/footer');
-  }
+}
+
 
   public function add() {
     if ($this->input->post()) {

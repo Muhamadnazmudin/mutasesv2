@@ -1,94 +1,221 @@
-/* === Custom Mutases Theme === */
+/* ===============================
+   MODE TOGGLE SUPPORT
+   =============================== */
+
 body {
-	background-color: #f4f6f8; /* abu lembut */
-	font-family: "Segoe UI", Roboto, Arial, sans-serif;
-	color: #444;
+	transition: background-color 0.3s, color 0.3s;
+	font-family: "Nunito", sans-serif;
+	overflow-y: auto !important;
 }
 
-/* Lebarkan area konten */
-.container-fluid {
-	max-width: 95%;
+/* --- LIGHT MODE DEFAULT --- */
+body:not(.dark-mode) {
+	background-color: #f8f9fc;
+	color: #212529;
 }
 
-/* Sidebar lebih ramping & tidak terlalu terang */
-.bg-gradient-primary {
-	background: linear-gradient(180deg, #304ffe 10%, #1a237e 100%);
+body:not(.dark-mode) .sidebar {
+	background: linear-gradient(180deg, #4e73df 10%, #224abe 100%) !important;
 }
 
-.sidebar .nav-item .nav-link {
-	font-size: 0.92rem;
-	color: #e3e6f0;
-	padding: 0.6rem 1rem;
+body:not(.dark-mode) .topbar {
+	background-color: #ffffff !important;
 }
 
-.sidebar .nav-item .nav-link:hover {
-	background-color: rgba(255, 255, 255, 0.15);
+body:not(.dark-mode) .card {
+	background-color: #ffffff !important;
+	color: #000;
+}
+
+body:not(.dark-mode) footer.sticky-footer {
+	background-color: #f8f9fc;
+	color: #666;
+}
+
+/* ===============================
+   DARK MODE (DEFAULT AKTIF)
+   =============================== */
+
+body.dark-mode {
+	background-color: #1e1e2f;
+	color: #e0e0e0;
+}
+
+#wrapper {
+	display: flex;
+	min-height: 100vh;
+	background-color: #1e1e2f;
+}
+
+#content-wrapper {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	height: 100vh;
+	background-color: #1e1e2f;
+}
+
+#content {
+	flex: 1;
+	overflow-y: auto;
+	background-color: #1e1e2f;
+}
+
+/* --- SIDEBAR --- */
+body.dark-mode .sidebar {
+	background: linear-gradient(180deg, #2b2b3c 10%, #23232e 100%) !important;
+	color: #ffffff;
+}
+
+body.dark-mode .sidebar .nav-item .nav-link {
+	color: #c9c9d1;
+	transition: all 0.2s ease-in-out;
+}
+
+body.dark-mode .sidebar .nav-item .nav-link i {
+	color: #a5a5b1;
+}
+
+body.dark-mode .sidebar .nav-item.active .nav-link,
+body.dark-mode .sidebar .nav-item .nav-link:hover {
+	background-color: #34344a;
 	color: #fff;
 }
 
-.sidebar .sidebar-brand {
-	font-size: 1rem;
+body.dark-mode .sidebar .sidebar-heading {
+	color: #9fa0b3;
+	font-weight: 600;
 }
 
-/* Navbar atas */
-.topbar {
-	background-color: #ffffff !important;
-	border-bottom: 1px solid #dee2e6;
+/* --- TOPBAR --- */
+body.dark-mode .topbar {
+	background-color: #2b2b3c !important;
+	border-bottom: 1px solid #38384a;
 }
 
-/* Warna teks judul */
-h3,
-h4,
-h5 {
-	color: #495057;
+body.dark-mode .topbar .nav-link,
+body.dark-mode .topbar .navbar-nav .nav-item .nav-link {
+	color: #ddd !important;
 }
 
-/* Footer lebih halus */
-footer.sticky-footer {
-	background-color: #f8f9fa;
-	font-size: 0.9rem;
-	color: #6c757d;
+body.dark-mode .topbar .nav-link:hover {
+	color: #fff !important;
 }
 
-/* Scrollbar halus */
-::-webkit-scrollbar {
-	width: 6px;
-}
-::-webkit-scrollbar-thumb {
-	background: #ccc;
-	border-radius: 3px;
-}
-body.dark-mode {
-	background-color: #1e1e2f;
-	color: #eee;
+/* --- CARD & TABLE --- */
+body.dark-mode .card {
+	background-color: #2b2b3c !important;
+	border: 1px solid #38384a;
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+	color: #e0e0e0;
 }
 
-body.dark-mode .topbar,
-body.dark-mode .card,
-body.dark-mode footer {
-	background-color: #2a2a3b;
+body.dark-mode .card-header {
+	background-color: #34344a !important;
+	color: #fff;
+	font-weight: 600;
+}
+
+body.dark-mode .table {
 	color: #ddd;
 }
 
-body.dark-mode .sidebar {
-	background: linear-gradient(180deg, #212529 10%, #0d0d0d 100%);
-}
-.sidebar {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
+body.dark-mode .table thead th {
+	background-color: #34344a;
+	color: #fff;
 }
 
-.sidebar {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	min-height: 100vh;
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+	background-color: #2e2e40;
 }
-/* === Fix label pada modal form === */
-.modal-body label {
-	color: #495057 !important;
-	font-weight: 600;
-	margin-bottom: 4px;
-	display: block;
+
+body.dark-mode .table-hover tbody tr:hover {
+	background-color: #3a3a52;
+}
+
+/* --- BUTTONS --- */
+.btn {
+	border-radius: 8px;
+	transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+	background-color: #4b6cb7;
+	border-color: #4b6cb7;
+}
+
+.btn-primary:hover {
+	background-color: #395591;
+	border-color: #395591;
+}
+
+.btn-danger {
+	background-color: #c0392b;
+	border-color: #c0392b;
+}
+
+.btn-danger:hover {
+	background-color: #a93226;
+}
+
+/* --- FOOTER --- */
+body.dark-mode footer.sticky-footer {
+	background-color: #2b2b3c;
+	color: #bbb;
+	border-top: 1px solid #38384a;
+}
+
+/* --- SCROLLBAR --- */
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: #1e1e2f;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #444;
+	border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: #666;
+}
+
+/* --- DATATABLES --- */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+	background-color: #2b2b3c;
+	border: 1px solid #444;
+	color: #ddd;
+}
+
+/* --- SWEETALERT DARK THEME --- */
+.swal-modal {
+	background-color: #2b2b3c !important;
+	color: #fff !important;
+}
+
+.swal-title {
+	color: #fff !important;
+}
+
+.swal-text {
+	color: #ccc !important;
+}
+
+/* --- CHART --- */
+.chartjs-render-monitor {
+	background-color: transparent !important;
+}
+
+/* --- LINK TEXT --- */
+a {
+	color: #4b6cb7;
+}
+
+a:hover {
+	color: #5d7de2;
 }
