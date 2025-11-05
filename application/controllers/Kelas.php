@@ -10,7 +10,9 @@ class Kelas extends CI_Controller {
     $this->load->helper(['url', 'form']);
   }
 
-  public function index($offset = 0) {
+  public function index($offset = 0)
+{
+    // === Konfigurasi Pagination ===
     $config['base_url'] = site_url('kelas/index');
     $config['total_rows'] = $this->Kelas_model->count_all();
     $config['per_page'] = 10;
@@ -27,18 +29,31 @@ class Kelas extends CI_Controller {
 
     $this->pagination->initialize($config);
 
+    // === Ambil data kelas + guru wali ===
     $data['title'] = 'Data Kelas';
     $data['active'] = 'kelas';
-    $data['kelas'] = $this->Kelas_model->get_all($config['per_page'], $offset);
+    $kelas = $this->Kelas_model->get_all($config['per_page'], $offset);
+
+    // === Tambahkan jumlah siswa aktif tiap kelas ===
+    foreach ($kelas as &$k) {
+        $k->jumlah_siswa = $this->db->where('id_kelas', $k->id)
+                                   ->where('status', 'aktif')
+                                   ->count_all_results('siswa');
+    }
+
+    // === Data tambahan untuk view ===
+    $data['kelas'] = $kelas;
     $data['pagination'] = $this->pagination->create_links();
     $data['guru'] = $this->Kelas_model->get_guru_list();
     $data['start'] = $offset;
 
+    // === Tampilkan ke view ===
     $this->load->view('templates/header', $data);
     $this->load->view('templates/sidebar', $data);
     $this->load->view('kelas/index', $data);
     $this->load->view('templates/footer');
-  }
+}
+
 
   public function add() {
     if ($this->input->post()) {

@@ -23,6 +23,7 @@
       <th>Nama Kelas</th>
       <th>Wali Kelas</th>
       <th>Kapasitas</th>
+      <th>Jumlah Siswa</th>
       <th width="120">Aksi</th>
     </tr>
   </thead>
@@ -33,6 +34,7 @@
         <td><?= $k->nama ?></td>
         <td><?= $k->wali_nama ?></td>
         <td><?= $k->kapasitas ?></td>
+        <td><?= $k->jumlah_siswa ?></td>
         <td>
           <a href="<?= site_url('kelas/edit/'.$k->id) ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
           <a href="<?= site_url('kelas/delete/'.$k->id) ?>" onclick="return confirm('Hapus data ini?')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
