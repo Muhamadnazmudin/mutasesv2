@@ -40,6 +40,18 @@
         <span>Absensi Siswa</span>
     </a>
 </li>
+<li class="nav-item <?= ($active == 'laporan_absensi') ? 'active' : '' ?>">
+    <a class="nav-link" href="<?= site_url('Absensi/Laporan') ?>">
+        <i class="fas fa-file-alt"></i>
+        <span>Laporan Absensi</span>
+    </a>
+</li>
+<li class="nav-item <?= ($active == 'hari_libur') ? 'active' : '' ?>">
+    <a class="nav-link" href="<?= base_url('index.php/HariLibur') ?>">
+        <i class="fas fa-calendar-times"></i>
+        <span>Hari Libur</span>
+    </a>
+</li>
 
 
     <?php endif; ?>

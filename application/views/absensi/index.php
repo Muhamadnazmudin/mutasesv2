@@ -1,18 +1,37 @@
 <h4>Data Absensi</h4>
 
+<!-- NOTIFIKASI FLASHDATA -->
+<?php if ($this->session->flashdata('success')): ?>
+<div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left:5px solid #28a745;">
+    <strong><i class="fa fa-check-circle"></i> Berhasil!</strong> 
+    <?= $this->session->flashdata('success'); ?>
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+</div>
+<?php endif; ?>
+
+<?php if ($this->session->flashdata('error')): ?>
+<div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left:5px solid #dc3545;">
+    <strong><i class="fa fa-times-circle"></i> Gagal!</strong> 
+    <?= $this->session->flashdata('error'); ?>
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+</div>
+<?php endif; ?>
+
+<!-- BUTTON TAMBAH -->
 <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalTambah">
   <i class="fas fa-plus"></i> Tambah Absensi
 </button>
 
 <br><br>
 
+<!-- TABEL DATA ABSENSI -->
 <table class="table table-bordered table-striped table-responsive-sm">
   <thead class="thead-light">
     <tr>
       <th width="120">Tanggal</th>
       <th>Nama Siswa</th>
       <th>Kelas</th>
-      <th>Status</th>
+      <th>Keterangan</th>
       <th>Alasan</th>
       <th width="250">Aksi</th>
     </tr>
@@ -39,19 +58,28 @@
         <td>
 
           <!-- DETAIL -->
-          <a href="<?= base_url('Absensi/Absensi/detail/'.$a->id_absensi) ?>" 
+          <!-- <a href="<?= site_url('Absensi/Absensi/detail/'.$a->id_absensi) ?>" 
              class="btn btn-info btn-sm">
              <i class="fas fa-eye"></i> Detail
-          </a>
-
+          </a> -->
+        <!-- EDIT -->
+<button class="btn btn-warning btn-sm btnEdit"
+        data-id="<?= $a->id_detail ?>" 
+        data-nama="<?= $a->nama_siswa ?>"
+        data-status="<?= $a->status ?>"
+        data-ket="<?= $a->keterangan ?>"
+        data-tgl="<?= $a->tanggal ?>"
+        data-kelas="<?= $a->nama_kelas ?>">
+    <i class="fas fa-edit"></i> Edit
+</button>
           <!-- HAPUS -->
-          <a href="<?= base_url('Absensi/Absensi/hapus/'.$a->id_absensi) ?>"
-             onclick="return confirm('Hapus data absensi ini?');"
+          <a href="<?= site_url('Absensi/Absensi/hapus/'.$a->id_absensi) ?>"
+             onclick="return confirm('Yakin ingin menghapus absensi ini?');"
              class="btn btn-danger btn-sm">
              <i class="fas fa-trash"></i> Hapus
           </a>
 
-          <!-- WHATSAPP NOTIFIKASI -->
+          <!-- WA NOTIF -->
           <a href="https://wa.me/<?= $a->nohp_wali ?>?text=Informasi%20Absensi%20:%0A
 Nama%20:%20<?= urlencode($a->nama_siswa) ?>%0A
 Kelas%20:%20<?= urlencode($a->nama_kelas) ?>%0A
@@ -72,9 +100,9 @@ Tanggal%20:%20<?= urlencode($a->tanggal) ?>"
 </table>
 
 
-<!-- ————————————————————————————————
-     MODAL TAMBAH ABSENSI (FULL)
-——————————————————————————————— -->
+<!-- ===========================
+     MODAL TAMBAH ABSENSI
+=========================== -->
 <div class="modal fade" id="modalTambah">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -146,6 +174,63 @@ Tanggal%20:%20<?= urlencode($a->tanggal) ?>"
     </div>
   </div>
 </div>
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEdit">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form method="post" action="<?= site_url('Absensi/Absensi/update') ?>">
+
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title">Edit Absensi</h5>
+          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+
+          <input type="hidden" 
+           name="<?= $this->security->get_csrf_token_name(); ?>" 
+           value="<?= $this->security->get_csrf_hash(); ?>">
+
+    <input type="hidden" name="id_detail" id="edit_id_detail">
+
+          <div class="form-group">
+            <label>Nama Siswa</label>
+            <input type="text" id="edit_nama" class="form-control" readonly>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" name="status" id="edit_status">
+              <option value="SAKIT">SAKIT</option>
+              <option value="IZIN">IZIN</option>
+              <option value="ALPA">ALPA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Alasan</label>
+            <input type="text" class="form-control" name="keterangan" id="edit_ket">
+          </div>
+
+          <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" class="form-control" name="tanggal" id="edit_tgl">
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-warning">Update</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
 
 <!-- ————————————————————————————————
      SCRIPT AJAX PENCARIAN SISWA
@@ -188,7 +273,8 @@ $("#cariSiswa").keyup(function () {
                 html += `
                   <div class="p-2 border-bottom pilihSiswa" 
                        data-id="${s.id}" 
-                       data-kelas="${s.nama_kelas}"
+                       data-kelas="${s.id_kelas}"
+
                        data-nama="${s.nama}">
                     <b>${s.nisn}</b> — ${s.nama_kelas} — ${s.nama}
                   </div>
@@ -215,4 +301,25 @@ $(document).click(function(e){
         $("#hasilCari").hide();
     }
 });
+
+// BUKA MODAL EDIT & ISI DATA
+$(document).on("click", ".btnEdit", function() {
+    $("#edit_id_detail").val($(this).data("id"));
+    $("#edit_nama").val($(this).data("nama"));
+    $("#edit_status").val($(this).data("status"));
+    $("#edit_ket").val($(this).data("ket"));
+    $("#edit_tgl").val($(this).data("tgl"));
+    
+    $("#modalEdit").modal("show");
+});
+
 </script>
+
+<!-- sc untuk menampilkan otomatis form tambah setelah simpan -->
+<!-- <?php if ($this->session->flashdata('success') || $this->session->flashdata('error')): ?>
+<script>
+$(document).ready(function() {
+    $("#modalTambah").modal("show");
+});
+</script>
+<?php endif; ?> -->

@@ -62,3 +62,7 @@ $route['guru'] = 'guru/index';
 $route['kelas'] = 'kelas/index';
 $route['users'] = 'users/index';
 $route['siswa-login'] = 'SiswaAuth';
+$route['Absensi/Laporan'] = 'Absensi/Laporan/index';
+$route['Absensi/Laporan/cari'] = 'Absensi/Laporan/cari';
+$route['Absensi/Laporan/pdf'] = 'Absensi/Laporan/pdf';
+$route['Absensi/Laporan/excel'] = 'Absensi/Laporan/excel';

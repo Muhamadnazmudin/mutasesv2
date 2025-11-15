@@ -72,5 +72,46 @@ public function get_or_create_absensi($tanggal, $id_kelas, $tahun)
     return $this->db->insert_id();
 }
 
+public function laporan_filter($nama, $kelas, $dari, $sampai, $tahun, $ket)
+{
+    $this->db->select("
+        a.tanggal,
+        a.tahun_pelajaran,
+        s.nama AS nama_siswa,
+        k.nama AS nama_kelas,
+        d.status,
+        d.keterangan
+    ");
+
+    $this->db->from("absensi_detail d");
+    $this->db->join("absensi a", "a.id_absensi = d.id_absensi");
+    $this->db->join("siswa s", "s.id = d.id_siswa");
+    $this->db->join("kelas k", "k.id = s.id_kelas");
+
+    if ($nama != "") {
+        $this->db->like("s.nama", $nama);
+    }
+
+    if ($kelas != "") {
+        $this->db->where("k.id", $kelas);
+    }
+
+    if ($ket != "") {
+        $this->db->where("d.status", $ket);
+    }
+
+    if ($tahun != "") {
+        $this->db->where("a.tahun_pelajaran", $tahun);
+    }
+
+    if ($dari != "" && $sampai != "") {
+        $this->db->where("a.tanggal >=", $dari);
+        $this->db->where("a.tanggal <=", $sampai);
+    }
+
+    $this->db->order_by("a.tanggal", "ASC");
+
+    return $this->db->get()->result();
+}
 
 }

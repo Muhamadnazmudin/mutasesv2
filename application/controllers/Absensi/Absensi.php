@@ -81,7 +81,8 @@ class Absensi extends CI_Controller {
     // Validasi
     if (!$tanggal || !$id_kelas || !$id_siswa || !$status) {
         $this->session->set_flashdata('error', 'Lengkapi semua data!');
-        redirect('Absensi/Absensi/tambah');
+        return redirect(site_url('Absensi/Absensi'));
+
     }
 
     // Buat header absensi / ambil existing
@@ -90,6 +91,26 @@ class Absensi extends CI_Controller {
         $id_kelas,
         $tahun
     );
+// Cari apakah sudah ada header absensi (tanggal + kelas)
+$absensi_header = $this->db->get_where('absensi', [
+    'tanggal' => $tanggal,
+    'id_kelas' => $id_kelas
+])->row();
+
+// Kalau header ada, cek apakah siswa pernah absen di header itu
+if ($absensi_header) {
+
+    $cek_detail = $this->db->get_where('absensi_detail', [
+        'id_absensi' => $absensi_header->id_absensi,
+        'id_siswa' => $id_siswa
+    ])->row();
+
+    if ($cek_detail) {
+        $this->session->set_flashdata('error', 'Siswa ini sudah memiliki catatan absensi pada tanggal tersebut.');
+        redirect('Absensi/Absensi');
+    }
+}
+
 
     // Simpan detail absensi
     $this->Absensi_model->insert_detail([
@@ -100,7 +121,8 @@ class Absensi extends CI_Controller {
     ]);
 
     $this->session->set_flashdata('success', 'Absensi berhasil disimpan.');
-    redirect('Absensi/Absensi/tambah'); // FIX redirect
+    return redirect(site_url('Absensi/Absensi'));
+
 }
 
 
@@ -111,6 +133,12 @@ class Absensi extends CI_Controller {
 
     // data header absensi
     $data['absen'] = $this->Absensi_model->get_by_id($id_absensi);
+
+if (!$data['absen']) {
+    $this->session->set_flashdata('error', 'Data absensi tidak ditemukan.');
+    redirect('Absensi/Absensi');
+}
+
 
     // ambil list siswa + status (H/I/S/A)
     $data['siswa'] = $this->Absensi_model->get_siswa_with_status(
@@ -184,6 +212,59 @@ public function input()
 //     $this->session->set_flashdata('success', 'Absensi tersimpan.');
 //     redirect('index.php/Absensi/Absensi/input');
 // }
+
+public function update()
+{
+    $id_detail = $this->input->post('id_detail');
+    $status    = $this->input->post('status');
+    $ket       = $this->input->post('keterangan');
+    $tanggal   = $this->input->post('tanggal');
+
+    // Cek apakah detail ada
+    $detail = $this->db->get_where('absensi_detail', ['id_detail' => $id_detail])->row();
+
+    if (!$detail) {
+        $this->session->set_flashdata('error', 'Data absensi tidak ditemukan.');
+        redirect('Absensi/Absensi');
+    }
+
+    // Ambil header absensi
+    $header = $this->db->get_where('absensi', ['id_absensi' => $detail->id_absensi])->row();
+
+    if (!$header) {
+        $this->session->set_flashdata('error', 'Header absensi tidak ditemukan.');
+        redirect('Absensi/Absensi');
+    }
+
+    // CEK DUPLIKASI: siswa yang sama di tanggal yang sama kecuali record yang sedang di-edit
+    $cekDuplikat = $this->db->query("
+        SELECT * FROM absensi_detail d
+        JOIN absensi a ON a.id_absensi = d.id_absensi
+        WHERE d.id_siswa = ?
+        AND a.tanggal = ?
+        AND d.id_detail != ?
+    ", [$detail->id_siswa, $tanggal, $id_detail])->row();
+
+    if ($cekDuplikat) {
+        $this->session->set_flashdata('error', 'Tidak bisa mengubah, siswa sudah memiliki absensi pada tanggal tersebut.');
+        redirect('Absensi/Absensi');
+    }
+
+    // UPDATE HEADER tanggal JIKA tanggal berubah
+    $this->db->where('id_absensi', $detail->id_absensi)->update('absensi', [
+        'tanggal' => $tanggal
+    ]);
+
+    // UPDATE detail absensi
+    $this->db->where('id_detail', $id_detail)->update('absensi_detail', [
+        'status' => $status,
+        'keterangan' => $ket
+    ]);
+
+    $this->session->set_flashdata('success', 'Data absensi berhasil diperbarui.');
+    redirect('Absensi/Absensi');
+}
+
 public function ajax_siswa()
 {
     $keyword = $this->input->post('keyword');
@@ -206,6 +287,17 @@ public function ajax_siswa()
     $result = $this->db->get()->result();
 
     echo json_encode($result);
+}
+public function hapus($id_absensi)
+{
+    // Hapus detail absensi
+    $this->db->delete('absensi_detail', ['id_absensi' => $id_absensi]);
+
+    // Hapus header absensi
+    $this->db->delete('absensi', ['id_absensi' => $id_absensi]);
+
+    $this->session->set_flashdata('success', 'Data absensi berhasil dihapus.');
+    redirect('Absensi/Absensi');
 }
 
 }

@@ -1,3 +1,5 @@
+<?php error_reporting(E_ALL); ini_set('display_errors', 1); ?>
+
 <!-- BOOTSTRAP BUNDLE (WAJIB UNTUK MODAL) -->
 <script src="<?= base_url('assets/vendor/bootstrap.bundle.min.js') ?>"></script>
 
@@ -235,4 +237,13 @@ $(document).ready(function(){
     });
 
 });
+
+<?php if ($this->session->flashdata('success') || $this->session->flashdata('error')): ?>
+    <script>
+        $(document).ready(function() {
+            $("#modalTambah").modal("show");
+        });
+    </script>
+<?php endif; ?>
+
 </script>
