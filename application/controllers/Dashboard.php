@@ -89,64 +89,68 @@ class Dashboard extends CI_Controller {
     // ==========================================================
     // 🔹 SISWA AKTIF PER TINGKAT (siswa_tahun)
     // ==========================================================
-    private function get_siswa_aktif_by_tingkat() {
-        $tahun = $this->tahun_id;
-        $out = ['x'=>0,'xi'=>0,'xii'=>0,'total'=>0];
+    private function get_siswa_aktif_by_tingkat()
+{
+    $out = ['x'=>0,'xi'=>0,'xii'=>0,'total'=>0];
 
-        $regex = [
-            'x'   => "^X( |$)",
-            'xi'  => "^XI( |$)",
-            'xii' => "^XII( |$)"
-        ];
+    $regex = [
+        'x'   => "^X( |$)",
+        'xi'  => "^XI( |$)",
+        'xii' => "^XII( |$)"
+    ];
 
-        foreach ($regex as $k => $r) {
+    foreach ($regex as $k => $r) {
 
-            $this->db->select("COUNT(st.id) AS jumlah");
-            $this->db->from("siswa_tahun st");
-            $this->db->join("kelas k", "k.id = st.kelas_id", "left");
-            $this->db->where("st.tahun_id", $tahun);
-            $this->db->where("st.status", "aktif");
-            $this->db->where("k.nama REGEXP '$r'");
+        $this->db->select('COUNT(siswa.id) AS jumlah');
+        $this->db->from('siswa');
+        $this->db->join('kelas', 'kelas.id = siswa.id_kelas', 'left');
+        $this->db->where('siswa.status', 'aktif');
+        $this->db->where("kelas.nama REGEXP '$r'");
 
-            $row = $this->db->get()->row();
-            $out[$k] = $row ? (int)$row->jumlah : 0;
-        }
-
-        $out['total'] = $out['x'] + $out['xi'] + $out['xii'];
-        return $out;
+        $q = $this->db->get()->row();
+        $out[$k] = $q ? (int)$q->jumlah : 0;
     }
+
+    $out['total'] = $out['x'] + $out['xi'] + $out['xii'];
+    return $out;
+}
 
 
     // ==========================================================
     // 🔹 SISWA KELUAR PER TINGKAT (mutasi)
     // ==========================================================
-    private function get_siswa_keluar_by_tingkat() {
-        $tahun = $this->tahun_id;
-        $out = ['x'=>0,'xi'=>0,'xii'=>0,'total'=>0];
+    private function get_siswa_keluar_by_tingkat()
+{
+    $out = ['x'=>0,'xi'=>0,'xii'=>0,'total'=>0];
 
-        $regex = [
-            'x'   => "^X( |$)",
-            'xi'  => "^XI( |$)",
-            'xii' => "^XII( |$)"
-        ];
+    $regex = [
+        'x'   => "^X( |$)",
+        'xi'  => "^XI( |$)",
+        'xii' => "^XII( |$)"
+    ];
 
-        foreach ($regex as $k => $r) {
+    foreach ($regex as $k => $r) {
 
-            $this->db->select("COUNT(m.id) AS jml");
-            $this->db->from("mutasi m");
-            $this->db->join("kelas k", "k.id = m.kelas_asal_id", "left");
-            $this->db->where("m.tahun_id", $tahun);
-            $this->db->where("m.status_mutasi", "aktif");
-            $this->db->where("m.jenis", "keluar");
-            $this->db->where("k.nama REGEXP '$r'");
+        $this->db->select('COUNT(siswa.id) AS jumlah');
+        $this->db->from('siswa');
+        $this->db->join('kelas', 'kelas.id = siswa.id_kelas', 'left');
 
-            $row = $this->db->get()->row();
-            $out[$k] = $row ? (int)$row->jml : 0;
-        }
+        // STATUS KELUAR
+        $this->db->where_in('siswa.status', [
+            'keluar',
+            'mutasi_keluar',
+            'meninggal'
+        ]);
 
-        $out['total']  = $out['x'] + $out['xi'] + $out['xii'];
-        return $out;
+        $this->db->where("kelas.nama REGEXP '$r'");
+
+        $row = $this->db->get()->row();
+        $out[$k] = $row ? (int)$row->jumlah : 0;
     }
+
+    $out['total'] = $out['x'] + $out['xi'] + $out['xii'];
+    return $out;
+}
 
 
     // ==========================================================

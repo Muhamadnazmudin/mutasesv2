@@ -52,6 +52,12 @@
         <span>Hari Libur</span>
     </a>
 </li>
+<li class="nav-item <?= ($active == 'izin') ? 'active' : '' ?>">
+    <a class="nav-link" href="<?= site_url('izin') ?>">
+        <i class="fas fa-door-open"></i>
+        <span>Izin Keluar Siswa</span>
+    </a>
+</li>
 
 
     <?php endif; ?>

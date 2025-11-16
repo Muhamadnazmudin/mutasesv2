@@ -24,9 +24,32 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 // $config['base_url'] = 'http://localhost:90/mutases/';
-$config['base_url']  = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
-$config['base_url'] .= "://".$_SERVER['HTTP_HOST'];
-$config['base_url'] .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
+// DETEKSI PROTOKOL (support reverse proxies / ngrok)
+$protocol = 'http';
+if (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+    || (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === 'https')
+) {
+    $protocol = 'https';
+}
+
+// HOST (pakai HTTP_HOST)
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+
+// Jika mutases terpasang di subfolder, tambahkan trailing path.
+// Contoh: jika akses via https://4cad.../mutases/, set $subdir = '/mutases/';
+$subdir = rtrim(str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']), '/');
+if ($subdir === '') {
+    $subdir = '/';
+} else {
+    $subdir = $subdir . '/';
+}
+
+// Build base_url dan pastikan trailing slash
+$config['base_url'] = $protocol . '://' . $host . $subdir;
+
 /*
 |--------------------------------------------------------------------------
 | Index File
@@ -464,7 +487,10 @@ $config['csrf_token_name'] = 'csrf_test_name';
 $config['csrf_cookie_name'] = 'csrf_cookie_name';
 $config['csrf_expire'] = 7200;
 $config['csrf_regenerate'] = FALSE;
-$config['csrf_exclude_uris'] = array();
+$config['csrf_exclude_uris'] = array(
+    'izin/ajukan/.*',
+    'izin/kembali/.*'
+);
 $config['sess_save_path'] = sys_get_temp_dir(); // penting!
 
 

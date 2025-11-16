@@ -31,6 +31,11 @@
             <i class="fas fa-file-pdf"></i> <span>Cetak Biodata PDF</span>
         </a>
     </li>
+    <li class="nav-item <?php echo ($active=='kartu'?'active':''); ?>">
+    <a class="nav-link" href="<?php echo site_url('SiswaDashboard/kartu'); ?>">
+        <i class="fas fa-id-badge"></i> <span>Kartu Siswa</span>
+    </a>
+</li>
 
     <!-- <li class="nav-item <?php echo ($active=='mutasi'?'active':''); ?>">
         <a class="nav-link" href="<?php echo site_url('SiswaDashboard/mutasi'); ?>">

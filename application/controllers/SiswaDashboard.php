@@ -8,24 +8,38 @@ class SiswaDashboard extends CI_Controller {
         parent::__construct();
         $this->load->model('Siswa_model');
         $this->load->database();
-
-        // simpan ID siswa di properti controller
-        $this->siswa_id = $this->session->userdata('siswa_id');
     }
 
     private function cek_login()
-{
-    if (!$this->session->userdata('siswa_login')) {
-        redirect('SiswaAuth');
+    {
+        if (!$this->session->userdata('siswa_login')) {
+            redirect('SiswaAuth');
+        }
     }
-}
 
+    private function getSiswa()
+    {
+        $siswa_id = $this->session->userdata('siswa_id');
+
+        if (!$siswa_id) {
+            return null;
+        }
+
+        return $this->db
+            ->select('siswa.*, kelas.nama AS nama_kelas, tahun_ajaran.tahun AS tahun_ajaran')
+            ->join('kelas','kelas.id = siswa.id_kelas','left')
+            ->join('tahun_ajaran','tahun_ajaran.id = siswa.tahun_id','left')
+            ->where('siswa.id', $siswa_id)
+            ->get('siswa')->row();
+    }
 
     public function index()
     {
         $this->cek_login();
 
         $data['siswa'] = $this->getSiswa();
+        if (!$data['siswa']) { redirect('SiswaAuth/logout'); }
+
         $data['active'] = 'dashboard';
 
         $this->load->view('siswa/layout/header', $data);
@@ -34,12 +48,13 @@ class SiswaDashboard extends CI_Controller {
         $this->load->view('siswa/layout/footer');
     }
 
-    // ===================== BIODATA =========================
     public function biodata()
     {
         $this->cek_login();
 
         $data['siswa'] = $this->getSiswa();
+        if (!$data['siswa']) { redirect('SiswaAuth/logout'); }
+
         $data['active'] = 'biodata';
 
         $this->load->view('siswa/layout/header', $data);
@@ -48,12 +63,13 @@ class SiswaDashboard extends CI_Controller {
         $this->load->view('siswa/layout/footer');
     }
 
-    // ===================== CETAK PDF =======================
     public function cetak()
     {
         $this->cek_login();
 
         $data['siswa'] = $this->getSiswa();
+        if (!$data['siswa']) { redirect('SiswaAuth/logout'); }
+
         $html = $this->load->view('siswa/cetak', $data, TRUE);
 
         $this->load->library('pdf');
@@ -64,18 +80,20 @@ class SiswaDashboard extends CI_Controller {
         $pdf->Output('Biodata_'.$data['siswa']->nama.'.pdf', 'I');
     }
 
-    // ===================== RIWAYAT MUTASI ==================
     public function mutasi()
     {
         $this->cek_login();
 
+        $siswa = $this->getSiswa();
+        if (!$siswa) { redirect('SiswaAuth/logout'); }
+
         $data['mutasi'] = $this->db
-            ->where('siswa_id', $this->siswa_id)
+            ->where('siswa_id', $siswa->id)
             ->get('mutasi')
             ->result();
 
-        $data['siswa'] = $this->getSiswa();
-        $data['active'] = 'mutasi';
+        $data['siswa']   = $siswa;
+        $data['active']  = 'mutasi';
 
         $this->load->view('siswa/layout/header', $data);
         $this->load->view('siswa/layout/sidebar', $data);
@@ -83,27 +101,13 @@ class SiswaDashboard extends CI_Controller {
         $this->load->view('siswa/layout/footer');
     }
 
-    // ===================== PENGUMUMAN ======================
-    public function pengumuman()
-    {
-        $this->cek_login();
-
-        $data['pengumuman'] = $this->db->order_by('id','DESC')->get('pengumuman')->result();
-        $data['siswa'] = $this->getSiswa();
-        $data['active'] = 'pengumuman';
-
-        $this->load->view('siswa/layout/header', $data);
-        $this->load->view('siswa/layout/sidebar', $data);
-        $this->load->view('siswa/pengumuman', $data);
-        $this->load->view('siswa/layout/footer');
-    }
-
-    // ===================== UBAH PASSWORD ===================
     public function password()
     {
         $this->cek_login();
 
         $data['siswa'] = $this->getSiswa();
+        if (!$data['siswa']) { redirect('SiswaAuth/logout'); }
+
         $data['active'] = 'password';
 
         $this->load->view('siswa/layout/header', $data);
@@ -116,33 +120,59 @@ class SiswaDashboard extends CI_Controller {
     {
         $this->cek_login();
 
+        $siswa = $this->getSiswa();
+        if (!$siswa) { redirect('SiswaAuth/logout'); }
+
         $old = $this->input->post('old');
         $new = $this->input->post('new');
 
-        $siswa = $this->getSiswa();
-
-        $password_now = $siswa->password ? $siswa->password : $siswa->nisn;
+        $password_now = $siswa->password ?: $siswa->nisn;
 
         if ($old != $password_now) {
             $this->session->set_flashdata('error', "Password lama salah!");
             redirect('SiswaDashboard/password');
         }
 
-        $this->db->where('id', $this->siswa_id)
+        $this->db->where('id', $siswa->id)
                  ->update('siswa', ['password' => $new]);
 
         $this->session->set_flashdata('success', "Password berhasil diubah!");
         redirect('SiswaDashboard/password');
     }
 
-    // ===================== GET SISWA DETAIL =================
-    private function getSiswa()
+    public function kartu()
     {
-        return $this->db
-            ->select('siswa.*, kelas.nama AS nama_kelas, tahun_ajaran.tahun AS tahun_ajaran')
-            ->join('kelas','kelas.id = siswa.id_kelas','left')
-            ->join('tahun_ajaran','tahun_ajaran.id = siswa.tahun_id','left')
-            ->where('siswa.id', $this->siswa_id)
-            ->get('siswa')->row();
+        $this->cek_login();
+
+        $data['siswa'] = $this->getSiswa();
+        if (!$data['siswa']) { redirect('SiswaAuth/logout'); }
+
+        $siswa = $data['siswa'];
+        $data['active'] = 'kartu';
+
+        require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
+
+        $qr_folder = FCPATH . 'assets/qrcodes/';
+        if (!is_dir($qr_folder)) mkdir($qr_folder, 0777, true);
+
+        if (!$siswa->token_qr) {
+            $token = uniqid('qr_');
+            $this->db->where('id', $siswa->id)->update('siswa', ['token_qr' => $token]);
+            $siswa->token_qr = $token;
+        }
+
+        $qr_file = $qr_folder . $siswa->token_qr . '.png';
+
+        if (!file_exists($qr_file)) {
+            QRcode::png($siswa->token_qr, $qr_file, QR_ECLEVEL_M, 6, 1);
+        }
+
+        $data['qr_file'] = base_url('assets/qrcodes/'.$siswa->token_qr.'.png');
+
+        $this->load->view('siswa/layout/header', $data);
+        $this->load->view('siswa/layout/sidebar', $data);
+        $this->load->view('siswa/kartu', $data);
+        $this->load->view('siswa/layout/footer');
     }
 }
+?>

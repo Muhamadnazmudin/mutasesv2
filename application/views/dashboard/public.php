@@ -177,6 +177,10 @@ body:not(.dark-mode) header .btn-toggle i.fa-moon {
   <a href="<?= base_url('index.php/dashboard/mutasi') ?>" class="btn btn-light btn-sm me-2">
     <i class="fas fa-users"></i> Siswa Mutasi
   </a>
+  <a href="<?= base_url('index.php/izin/scan') ?>" class="btn btn-outline-warning btn-sm me-2">
+  <i class="fas fa-qrcode"></i> Izin Keluar
+</a>
+
   <button class="btn-toggle" id="toggleDark" title="Ganti Tema">
   <i class="fas fa-moon"></i>
 </button>
@@ -209,7 +213,7 @@ body:not(.dark-mode) header .btn-toggle i.fa-moon {
 
   <div class="text-center mb-4">
     <h3 class="fw-bold mb-2">Selamat Datang di Sistem Mutasi Siswa 👋</h3>
-    <p class="text-muted" id="currentTime">Data per <strong>-</strong></p>
+    <p class="text" id="currentTime">Data per <strong>-</strong></p>
   </div>
 
   <h2 class="section-title mb-5">Statistik Mutasi Siswa Sekolah</h2>

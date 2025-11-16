@@ -140,6 +140,24 @@ $config['reuse_query_string'] = true;
     ];
 
     $this->Siswa_model->insert($data);
+    // ================== GENERATE QR OFFLINE OTOMATIS ==================
+require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
+
+
+$qr_folder = FCPATH . 'uploads/qr/';
+if (!file_exists($qr_folder)) {
+    mkdir($qr_folder, 0777, true);
+}
+
+$token = uniqid('qr_');
+$qr_file = $qr_folder . $token . '.png';
+QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+
+
+// update token siswa
+$id_siswa = $this->db->insert_id();
+$this->db->where('id', $id_siswa)->update('siswa', ['token_qr' => $token]);
+
     $this->session->set_flashdata('success', 'Data siswa berhasil ditambahkan.');
     redirect('siswa');
   }
@@ -630,6 +648,26 @@ public function import_excel()
             $siswa_id = $this->db->insert_id();
             $insert++;
         }
+// ================== GENERATE QR OFFLINE OTOMATIS ==================
+if (!$exist || empty($exist->token_qr)) { // hanya jika belum punya token
+
+   require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
+
+
+    $qr_folder = FCPATH . 'uploads/qr/';
+    if (!file_exists($qr_folder)) {
+        mkdir($qr_folder, 0777, true);
+    }
+
+    $token = uniqid('qr_');
+    $qr_file = $qr_folder . $token . '.png';
+    QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+
+
+    // simpan token
+    $this->db->where('id', $siswa_id)
+             ->update('siswa', ['token_qr' => $token]);
+}
 
         // =============================================================
         // TAMBAHKAN / UPDATE siswa_tahun
