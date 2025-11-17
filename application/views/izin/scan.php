@@ -8,6 +8,11 @@
 
 <body class="p-4">
 
+<!-- === KUNCI PERANGKAT PETUGAS === -->
+<script>
+    document.cookie = "petugas_scan=OK; path=/; SameSite=Lax";
+</script>
+
 <h3>Scan Kartu Siswa</h3>
 <p>Silakan arahkan QR Code kartu siswa ke kamera.</p>
 
@@ -16,20 +21,27 @@
 <script>
 const BASE_URL = "<?= base_url() ?>";
 
+// *** SCAN PROCESS BARU (AMAN) ***
 function onScanSuccess(decodedText) {
 
-    // Pecah hasil scan berdasarkan "/"
+    // Ambil token dari hasil scan
     let parts = decodedText.split('/');
-    let token = parts[parts.length - 1]; // ambil elemen terakhir, contoh: kembali_xxxx atau qr_xxxx
+    let token = parts[parts.length - 1];
 
-    // === Jika token adalah token kembali ===
-    if (token.startsWith("kembali_")) {
-        window.location.href = BASE_URL + "index.php/izin/kembali/" + token;
-        return;
-    }
-
-    // === Jika token adalah token kartu siswa ===
-    window.location.href = BASE_URL + "index.php/izin/scan/" + token;
+    // Kirim ke server untuk diproses (dengan HEADER khusus)
+    fetch(BASE_URL + "index.php/izin/scan_process?token=" + token, {
+        headers: {
+            "X-Scanner": "MUTASES" 
+        }
+    })
+    .then(res => res.text())
+    .then(url => {
+        if (url === "403") {
+            alert("Akses ditolak! Hanya perangkat petugas yang boleh scan.");
+        } else {
+            window.location.href = url;
+        }
+    });
 }
 
 var html5QrcodeScanner = new Html5QrcodeScanner(
@@ -38,7 +50,6 @@ var html5QrcodeScanner = new Html5QrcodeScanner(
 );
 html5QrcodeScanner.render(onScanSuccess);
 </script>
-
 
 </body>
 </html>

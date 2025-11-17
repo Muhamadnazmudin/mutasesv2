@@ -31,4 +31,9 @@ class Guru_model extends CI_Model {
     $this->db->where('id', $id);
     return $this->db->delete($this->table);
   }
+  public function get($id)
+{
+    return $this->db->get_where('guru', ['id' => $id])->row();
+}
+
 }

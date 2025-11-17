@@ -7,6 +7,7 @@ class Izin extends CI_Controller {
     {
         parent::__construct();
         $this->load->model('Izin_model');
+        $this->load->model('Guru_model');
         require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
         $this->load->database();
     }
@@ -16,34 +17,54 @@ class Izin extends CI_Controller {
     // =======================================================================
     public function scan($token = null)
 {
-    // Kalau scanner mengirim URL panjang → ambil token terakhir
+    // Kalau hasil scanner berupa URL panjang
     if ($token !== null && strpos($token, 'http') !== false) {
         $parts = explode('/', $token);
         $token = end($parts);
     }
 
-    // Jika ini token kembali (kembali_xxxxxx)
+    // Jika token kembali
     if ($token !== null && strpos($token, 'kembali_') === 0) {
         redirect('izin/kembali/' . $token);
         return;
     }
 
-    // Jika belum ada token → tampilkan scanner
+    // Tanpa token → tampilkan QR scanner
     if ($token === null || $token == "") {
         $this->load->view('izin/scan');
         return;
     }
 
-    // TOKEN MASUK (scan kartu siswa)
-    $siswa = $this->db->get_where('siswa', ['token_qr' => $token])->row();
+    // Ambil siswa + join kelas
+    $siswa = $this->Izin_model->get_siswa_by_token($token);
 
     if (!$siswa) {
         echo "<h3>QR Code tidak valid!</h3>";
         return;
     }
 
-    $data['siswa'] = $siswa;
-    $data['token_qr'] = $token;
+    // Ambil kelas siswa
+    $kelas = $this->db->get_where('kelas', ['id' => $siswa->kelas_id])->row();
+
+    // Ambil wali kelas
+    $walikelas = null;
+    if ($kelas && $kelas->wali_kelas_id) {
+        $walikelas = $this->db->get_where('guru', [
+            'id' => $kelas->wali_kelas_id
+        ])->row();
+    }
+
+    // Ambil semua guru
+    $guru_list = $this->db->order_by('nama', 'ASC')->get('guru')->result();
+
+    // Kirim ke view
+    $data = [
+        'siswa'      => $siswa,
+        'kelas'      => $kelas,
+        'walikelas'  => $walikelas,
+        'guru_list'  => $guru_list,
+        'token_qr'   => $token
+    ];
 
     $this->load->view('izin/scan_form', $data);
 }
@@ -62,37 +83,61 @@ class Izin extends CI_Controller {
         return;
     }
 
-    $kelas = $this->db->get_where('kelas', ['id' => $siswa->id_kelas])->row();
+    // Ambil kelas
+    $kelas = $this->db->get_where('kelas', ['id' => $siswa->kelas_id])->row();
 
-    $jenis = $this->input->post('jenis'); // keluar / pulang
+    $jenis           = $this->input->post('jenis');
+    $keperluan       = $this->input->post('keperluan');
+    $estimasi        = $this->input->post('estimasi');
+    $id_guru_mapel   = $this->input->post('id_guru_mapel');
+    $id_piket        = $this->input->post('id_piket');
+    $id_walikelas    = $this->input->post('id_walikelas');
+    $ditujukan       = $this->input->post('ditujukan');
 
-    // Token kembali hanya untuk izin keluar
-    $token_kembali = ($jenis == 'keluar') ? uniqid('kembali_') : null;
-
-    $data_insert = [
-        'siswa_id'      => $siswa->id,
-        'nis'           => $siswa->nis,
-        'nama'          => $siswa->nama,
-        'kelas_id'      => $siswa->id_kelas,
-        'kelas_nama'    => $kelas ? $kelas->nama : '-',
-        'keperluan'     => $this->input->post('keperluan'),
-        'estimasi_menit'=> $jenis == 'keluar' ? $this->input->post('estimasi') : null,
-        'jam_keluar'    => date('Y-m-d H:i:s'),
-        'token_keluar'  => $token_qr,
-        'token_kembali' => $token_kembali,
-        'status'        => ($jenis == 'pulang') ? 'pulang' : 'keluar',
-        'jenis_izin'    => $jenis
-    ];
-
-    $id = $this->Izin_model->insert_izin($data_insert);
-
-    // Jika pulang → tidak ada QR kembali
-    if ($jenis == 'pulang') {
-        redirect('izin/cetak/' . $id);
+    // Validasi sederhana
+    if (empty($jenis) || empty($keperluan)) {
+        $this->session->set_flashdata('error', 'Jenis izin dan keperluan harus diisi.');
+        redirect('izin/scan/' . $token_qr);
         return;
     }
 
-    // Izin keluar → tetap cetak QR kembali
+    // Token kembali hanya untuk izin keluar
+    $token_kembali = null;
+    if ($jenis == 'keluar') {
+        $token_kembali = uniqid('kembali_');
+    }
+
+    // Jika nilai kosong harus dibuat null agar aman
+    if ($id_guru_mapel == "") $id_guru_mapel = null;
+    if ($id_piket == "") $id_piket = null;
+    if ($id_walikelas == "") $id_walikelas = null;
+    if ($ditujukan == "") $ditujukan = null;
+
+    $data_insert = [
+        'siswa_id'       => $siswa->id,
+        'nis'            => isset($siswa->nis) ? $siswa->nis : null,
+        'nama'           => $siswa->nama,
+        'kelas_id'       => $siswa->kelas_id,
+        'kelas_nama'     => $kelas ? $kelas->nama : '-',
+        'keperluan'      => $keperluan,
+        'estimasi_menit' => ($jenis == 'keluar') ? $estimasi : null,
+        'jam_keluar'     => date('Y-m-d H:i:s'),
+        'token_keluar'   => $token_qr,
+        'token_kembali'  => $token_kembali,
+        'status'         => ($jenis == 'pulang') ? 'pulang' : 'keluar',
+        'jenis_izin'     => $jenis,
+
+        // tambahan
+        'id_guru_mapel'  => $id_guru_mapel,
+        'id_piket'       => $id_piket,
+        'id_walikelas'   => $id_walikelas,
+        'ditujukan'      => $ditujukan,
+    ];
+
+    // Simpan
+    $id = $this->Izin_model->insert_izin($data_insert);
+
+    // Selesai → cetak
     redirect('izin/cetak/' . $id);
 }
 
@@ -129,10 +174,21 @@ class Izin extends CI_Controller {
     // 4. CETAK SURAT IZIN
     // =======================================================================
     public function cetak($id)
-    {
-        $data['izin'] = $this->Izin_model->get_by_id($id);
-        $this->load->view('izin/cetak', $data);
+{
+    $izin = $this->Izin_model->get_by_id($id);
+
+    $data['izin'] = $izin;
+    $data['guru_mapel'] = $this->Guru_model->get($izin->id_guru_mapel);
+    $data['piket'] = $this->Guru_model->get($izin->id_piket);
+
+    if ($izin->jenis_izin == 'pulang') {
+        $data['walikelas'] = $this->Guru_model->get($izin->id_walikelas);
+        $this->load->view('izin/cetak_pulang', $data);
+    } else {
+        $this->load->view('izin/cetak_keluar', $data);
     }
+}
+
 
     // =======================================================================
     // 5. MONITOR ADMIN
@@ -189,6 +245,30 @@ class Izin extends CI_Controller {
     $this->load->view('templates/sidebar', $data);
     $this->load->view('izin/index', $data);
     $this->load->view('templates/footer');
+}
+public function scan_process()
+{
+    // HARUS dari scanner (bukan buka link manual)
+    $header = $this->input->get_request_header("X-Scanner");
+    if ($header !== "MUTASES") {
+        echo "403";
+        return;
+    }
+
+    // HARUS dari perangkat petugas (cookie)
+    if (!isset($_COOKIE['petugas_scan'])) {
+        echo "403";
+        return;
+    }
+
+    $token = $this->input->get("token");
+
+    // Kembalikan URL tujuan sesuai token
+    if (strpos($token, "kembali_") === 0) {
+        echo base_url("index.php/izin/kembali/" . $token);
+    } else {
+        echo base_url("index.php/izin/scan/" . $token);
+    }
 }
 
 

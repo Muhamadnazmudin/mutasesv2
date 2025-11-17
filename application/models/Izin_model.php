@@ -2,9 +2,14 @@
 class Izin_model extends CI_Model {
 
     public function get_siswa_by_token($token)
-    {
-        return $this->db->get_where('siswa', ['token_qr' => $token])->row();
-    }
+{
+    $this->db->select('siswa.*, kelas.nama AS kelas_nama, kelas.id AS kelas_id');
+    $this->db->from('siswa');
+    $this->db->join('kelas', 'kelas.id = siswa.id_kelas', 'left');
+    $this->db->where('siswa.token_qr', $token);
+    return $this->db->get()->row();
+}
+
 
     public function izin_aktif($siswa_id)
     {
