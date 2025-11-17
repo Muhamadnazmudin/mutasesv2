@@ -4,6 +4,10 @@
     <a href="<?= site_url('siswa/download_template') ?>" class="btn btn-outline-secondary btn-sm">
       <i class="fas fa-download"></i> Download Template
     </a>
+    <a href="<?= site_url('siswa/cetak_semua?kelas=' . $kelas_id . '&search=' . $search) ?>" 
+   class="btn btn-dark btn-sm">
+    <i class="fas fa-file-archive"></i> Cetak Semua ID Card (ZIP)
+</a>
     <a href="<?= site_url('siswa/export_excel') ?>" class="btn btn-success btn-sm">
       <i class="fas fa-file-excel"></i> Export
     </a>
@@ -114,17 +118,34 @@
             <span class="badge badge-secondary">Keluar</span>
           <?php endif; ?>
         </td>
-        <td>
-          <a href="<?= site_url('siswa/edit/'.$s->id) ?>" class="btn btn-warning btn-sm">
-            <i class="fas fa-edit"></i>
-          </a>
-          <a href="<?= site_url('siswa/delete/'.$s->id) ?>" onclick="return confirm('Hapus data ini?')" class="btn btn-danger btn-sm">
-            <i class="fas fa-trash"></i>
-          </a>
-          <a href="<?= site_url('siswa/cetak/'.$s->id) ?>" class="btn btn-info btn-sm" target="_blank">
+        <td class="text-center">
+  <a href="<?= site_url('siswa/edit/'.$s->id) ?>" class="btn btn-warning btn-sm" title="Edit">
+    <i class="fas fa-edit"></i>
+  </a>
+
+  <a href="<?= site_url('siswa/delete/'.$s->id) ?>" 
+     onclick="return confirm('Hapus data ini?')" 
+     class="btn btn-danger btn-sm"
+     title="Hapus">
+    <i class="fas fa-trash"></i>
+  </a>
+
+  <a href="<?= site_url('siswa/cetak/'.$s->id) ?>" 
+     class="btn btn-info btn-sm" 
+     target="_blank"
+     title="Cetak Formulir">
     <i class="fas fa-print"></i>
   </a>
-        </td>
+
+  <!-- 🔹 Tombol Cetak ID Card -->
+  <a href="<?= site_url('idcard/cetak/'.$s->id) ?>" 
+   class="btn btn-primary btn-sm"
+   title="Download ID Card JPG">
+   <i class="fas fa-id-card"></i>
+</a>
+
+</td>
+
       </tr>
     <?php endforeach; ?>
   </tbody>

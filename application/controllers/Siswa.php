@@ -8,6 +8,7 @@ class Siswa extends CI_Controller {
     $this->load->model('Siswa_model');
     $this->load->library(['form_validation', 'pagination', 'PHPExcel_lib']);
     $this->load->helper(['url', 'form']);
+    $this->load->library('idcard_lib');
   }
 
   public function index($offset = 0)
@@ -166,37 +167,80 @@ $this->db->where('id', $id_siswa)->update('siswa', ['token_qr' => $token]);
   // ========================================
   // EDIT SISWA
   // ========================================
-  public function edit($id) {
-    if ($this->input->post()) {
-      $data = [
-        'nis' => $this->input->post('nis', TRUE),
-        'nisn' => $this->input->post('nisn', TRUE),
-        'nama' => $this->input->post('nama', TRUE),
-        'jk' => $this->input->post('jk', TRUE),
-        'agama' => $this->input->post('agama', TRUE),
-        'tempat_lahir' => $this->input->post('tempat_lahir', TRUE),
-        'tgl_lahir' => $this->input->post('tgl_lahir', TRUE),
-        'alamat' => $this->input->post('alamat', TRUE),
-        'id_kelas' => $this->input->post('id_kelas', TRUE),
-        'tahun_id' => $this->input->post('tahun_id', TRUE),
-        'status' => $this->input->post('status', TRUE)
-      ];
+  public function edit($id)
+{
+    $siswa = $this->Siswa_model->get_by_id($id);
 
-      $this->Siswa_model->update($id, $data);
-      $this->session->set_flashdata('success', 'Data siswa berhasil diperbarui.');
-      redirect('siswa');
+    if ($this->input->post()) {
+
+        $data = [
+            'nis' => $this->input->post('nis', TRUE),
+            'nisn' => $this->input->post('nisn', TRUE),
+            'nama' => $this->input->post('nama', TRUE),
+            'jk' => $this->input->post('jk', TRUE),
+            'agama' => $this->input->post('agama', TRUE),
+            'tempat_lahir' => $this->input->post('tempat_lahir', TRUE),
+            'tgl_lahir' => $this->input->post('tgl_lahir', TRUE),
+            'alamat' => $this->input->post('alamat', TRUE),
+            'id_kelas' => $this->input->post('id_kelas', TRUE),
+            'tahun_id' => $this->input->post('tahun_id', TRUE),
+            'status' => $this->input->post('status', TRUE)
+        ];
+
+        // ============================================
+        // 🔥 HANDLE UPLOAD FOTO
+        // ============================================
+        if (!empty($_FILES['foto']['name'])) {
+
+            // Konfigurasi upload
+            $config['upload_path']   = './uploads/foto/';
+            $config['allowed_types'] = 'jpg|jpeg|png';
+            $config['max_size']      = 2048; // 2MB
+            $config['file_name']     = 'foto_' . time();
+
+            $this->load->library('upload', $config);
+
+            if ($this->upload->do_upload('foto')) {
+
+                $upload = $this->upload->data();
+                $data['foto'] = $upload['file_name'];
+
+                // Hapus foto lama jika ada
+                if (!empty($siswa->foto) && file_exists('./uploads/foto/' . $siswa->foto)) {
+                    unlink('./uploads/foto/' . $siswa->foto);
+                }
+
+            } else {
+                // Jika upload gagal
+                $this->session->set_flashdata('error', $this->upload->display_errors());
+                redirect('siswa/edit/' . $id);
+            }
+        }
+        // ============================================
+
+
+        // UPDATE KE DATABASE
+        $this->Siswa_model->update($id, $data);
+
+        $this->session->set_flashdata('success', 'Data siswa berhasil diperbarui.');
+        redirect('siswa');
+
     } else {
-      $data['siswa'] = $this->Siswa_model->get_by_id($id);
-      $data['kelas'] = $this->Siswa_model->get_kelas_list();
-      $data['tahun'] = $this->Siswa_model->get_tahun_list();
-      $data['title'] = 'Edit Siswa';
-      $data['active'] = 'siswa';
-      $this->load->view('templates/header', $data);
-      $this->load->view('templates/sidebar', $data);
-      $this->load->view('siswa/edit', $data);
-      $this->load->view('templates/footer');
+
+        // Menampilkan form edit
+        $data['siswa'] = $siswa;
+        $data['kelas'] = $this->Siswa_model->get_kelas_list();
+        $data['tahun'] = $this->Siswa_model->get_tahun_list();
+        $data['title'] = 'Edit Siswa';
+        $data['active'] = 'siswa';
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('siswa/edit', $data);
+        $this->load->view('templates/footer');
     }
-  }
+}
+
 
   // ========================================
   // HAPUS SISWA (cek mutasi dulu)
@@ -766,6 +810,70 @@ public function cetak($id)
 
     // Output PDF ke browser
     $pdf->Output($fileName, 'I'); // I = inline, D = download
+}
+public function cetak_semua()
+{
+    // Ambil filter dari URL
+    $kelas_id = $this->input->get('kelas');
+    $search   = $this->input->get('search');
+
+    // Load library ZIP & Idcard_lib
+    $this->load->library('zip');
+    $this->load->library('Idcard_lib');
+
+    // Ambil data siswa sesuai filter
+    $this->db->select('siswa.*, kelas.nama AS nama_kelas');
+    $this->db->from('siswa');
+    $this->db->join('kelas', 'kelas.id = siswa.id_kelas', 'left');
+    $this->db->where('siswa.status', 'aktif');
+
+    if (!empty($kelas_id)) {
+        $this->db->where('siswa.id_kelas', $kelas_id);
+    }
+
+    if (!empty($search)) {
+        $this->db->group_start();
+        $this->db->like('siswa.nama', $search);
+        $this->db->or_like('siswa.nis', $search);
+        $this->db->or_like('siswa.nisn', $search);
+        $this->db->group_end();
+    }
+
+    $query = $this->db->get();
+    $siswa_list = $query->result();
+
+    if (!$siswa_list) {
+        $this->session->set_flashdata('error', 'Tidak ada data siswa sesuai filter.');
+        redirect('siswa');
+    }
+
+    // =====================================================================
+    // ZIP generator per folder kelas
+    // =====================================================================
+    $folder_zip = [];
+
+    foreach ($siswa_list as $s) {
+
+        // Generate JPG dari library
+        $jpgData = $this->idcard_lib->generate($s->id);
+        if (!$jpgData) continue;
+
+        // Tentukan nama folder kelas
+        $kelas_folder = !empty($s->nama_kelas) ? $s->nama_kelas : "Tanpa_Kelas";
+
+        // Nama file idcard
+        $safeName = strtolower(str_replace(" ", "_", $s->nama));
+        $fileName = "idcard_" . $safeName . ".jpg";
+
+        // Masukkan ke folder kelas
+        $this->zip->add_data($kelas_folder . "/" . $fileName, $jpgData);
+    }
+
+    // Nama file ZIP hasil download
+    $zipName = "idcard_filtered_" . date("Ymd_His") . ".zip";
+
+    // Download ZIP
+    $this->zip->download($zipName);
 }
 
 }

@@ -36,6 +36,12 @@
         <i class="fas fa-id-badge"></i> <span>Kartu Siswa</span>
     </a>
 </li>
+<li class="nav-item <?php echo ($active=='idcard'?'active':''); ?>">
+    <a class="nav-link" href="<?php echo site_url('SiswaDashboard/idcard'); ?>">
+        <i class="fas fa-id-card"></i> <span>ID Card Siswa</span>
+    </a>
+</li>
+
 
     <!-- <li class="nav-item <?php echo ($active=='mutasi'?'active':''); ?>">
         <a class="nav-link" href="<?php echo site_url('SiswaDashboard/mutasi'); ?>">

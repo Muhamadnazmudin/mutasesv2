@@ -174,5 +174,32 @@ class SiswaDashboard extends CI_Controller {
         $this->load->view('siswa/kartu', $data);
         $this->load->view('siswa/layout/footer');
     }
+    public function idcard()
+{
+    $this->cek_login();
+
+    $siswa = $this->getSiswa();
+    if (!$siswa) { redirect('SiswaAuth/logout'); }
+
+    $data['siswa'] = $siswa;
+    $data['active'] = 'idcard';
+
+    // Load library ID Card
+    $this->load->library('Idcard_lib');
+
+    // Generate PNG (binary string)
+    $imgBinary = $this->idcard_lib->generate($siswa->id);
+
+    // Convert ke Base64 untuk preview
+    $data['idcard_base64'] = base64_encode($imgBinary);
+
+    // Load view
+    $this->load->view('siswa/layout/header', $data);
+    $this->load->view('siswa/layout/sidebar', $data);
+    $this->load->view('siswa/idcard_preview', $data);
+    $this->load->view('siswa/layout/footer');
 }
+
+}
+
 ?>

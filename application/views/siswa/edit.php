@@ -7,7 +7,7 @@
 
 <div class="card shadow-sm">
   <div class="card-body">
-    <form method="post" action="<?= site_url('siswa/edit/'.$siswa->id) ?>">
+    <form method="post" action="<?= site_url('siswa/edit/'.$siswa->id) ?>" enctype="multipart/form-data">
       <!-- CSRF -->
       <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" 
              value="<?= $this->security->get_csrf_hash(); ?>">
@@ -110,6 +110,53 @@
           </select>
         </div>
       </div>
+<div class="form-group">
+  <label>Foto Siswa</label>
+
+  <div class="mb-2">
+
+    <?php
+      // Cek apakah kolom foto tersedia & tidak kosong
+      if (!empty($siswa->foto) && file_exists(FCPATH . "uploads/foto/" . $siswa->foto)):
+    ?>
+      <!-- Foto Lama -->
+      <img src="<?= base_url('uploads/foto/' . $siswa->foto) ?>" 
+           alt="Foto Siswa" 
+           class="img-thumbnail mb-2" 
+           style="width:130px;height:160px;object-fit:cover;border-radius:8px;">
+    <?php else: 
+      // Inisial
+      $nama = explode(" ", strtoupper($siswa->nama));
+      $inisial = substr($nama[0],0,1) . substr(end($nama),0,1);
+    ?>
+      <div style="
+        width:130px;
+        height:130px;
+        border-radius:50%;
+        background:#0d6efd;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:48px;
+        color:white;
+        font-weight:bold;
+        margin-bottom:10px;
+      ">
+        <?= $inisial ?>
+      </div>
+    <?php endif; ?>
+
+  </div>
+
+  <input type="file" 
+         name="foto" 
+         accept="image/*"
+         class="form-control-file">
+
+  <small class="text-muted">
+    *Format foto: JPG / PNG — otomatis mengganti foto sebelumnya.
+  </small>
+</div>
 
       <div class="text-right">
         <button type="submit" class="btn btn-primary">
