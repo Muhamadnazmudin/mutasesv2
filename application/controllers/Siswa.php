@@ -150,10 +150,16 @@ if (!file_exists($qr_folder)) {
     mkdir($qr_folder, 0777, true);
 }
 
-$token = uniqid('qr_');
-$qr_file = $qr_folder . $token . '.png';
-QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+// $token = uniqid('qr_');
+// $qr_file = $qr_folder . $token . '.png';
+// QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
 
+$token = 'qr_' . $id_siswa;   // QR tetap seumur hidup
+$qr_file = $qr_folder . $token . '.png';
+
+if (!file_exists($qr_file)) {  // hanya generate sekali
+    QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+}
 
 // update token siswa
 $id_siswa = $this->db->insert_id();
@@ -703,14 +709,22 @@ if (!$exist || empty($exist->token_qr)) { // hanya jika belum punya token
         mkdir($qr_folder, 0777, true);
     }
 
-    $token = uniqid('qr_');
+    // $token = uniqid('qr_');
+    // $qr_file = $qr_folder . $token . '.png';
+    // QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+
+
+    // // simpan token
+    // $this->db->where('id', $siswa_id)
+    //          ->update('siswa', ['token_qr' => $token]);
+    $token = 'qr_' . $siswa_id;   // QR tetap & tidak berubah
     $qr_file = $qr_folder . $token . '.png';
-    QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
 
+    if (!file_exists($qr_file)) {
+        QRcode::png($token, $qr_file, QR_ECLEVEL_M, 6);
+    }
 
-    // simpan token
-    $this->db->where('id', $siswa_id)
-             ->update('siswa', ['token_qr' => $token]);
+    $this->db->where('id', $siswa_id)->update('siswa', ['token_qr' => $token]);
 }
 
         // =============================================================

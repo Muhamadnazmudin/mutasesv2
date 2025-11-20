@@ -177,17 +177,48 @@ class Izin extends CI_Controller {
 {
     $izin = $this->Izin_model->get_by_id($id);
 
-    $data['izin'] = $izin;
-    $data['guru_mapel'] = $this->Guru_model->get($izin->id_guru_mapel);
-    $data['piket'] = $this->Guru_model->get($izin->id_piket);
+    if (!$izin) {
+        echo "Data tidak ditemukan";
+        return;
+    }
+
+    // Dummy guru untuk menghindari error
+    $dummy = (object)[
+        'nama' => '-',
+        'nip'  => '-'
+    ];
+
+    // Guru Mapel
+    $guru_mapel = $izin->id_guru_mapel
+        ? $this->Guru_model->get($izin->id_guru_mapel)
+        : $dummy;
+
+    // Petugas Piket
+    $piket = $izin->id_piket
+        ? $this->Guru_model->get($izin->id_piket)
+        : $dummy;
+
+    // Walikelas
+    $walikelas = $izin->id_walikelas
+        ? $this->Guru_model->get($izin->id_walikelas)
+        : $dummy;
+
+
+    // Data ke View
+    $data = [
+        'izin'        => $izin,
+        'guru_mapel'  => $guru_mapel ?: $dummy,
+        'piket'       => $piket ?: $dummy,
+        'walikelas'   => $walikelas ?: $dummy
+    ];
 
     if ($izin->jenis_izin == 'pulang') {
-        $data['walikelas'] = $this->Guru_model->get($izin->id_walikelas);
         $this->load->view('izin/cetak_pulang', $data);
     } else {
         $this->load->view('izin/cetak_keluar', $data);
     }
 }
+
 
 
     // =======================================================================

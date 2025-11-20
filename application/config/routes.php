@@ -66,3 +66,11 @@ $route['Absensi/Laporan'] = 'Absensi/Laporan/index';
 $route['Absensi/Laporan/cari'] = 'Absensi/Laporan/cari';
 $route['Absensi/Laporan/pdf'] = 'Absensi/Laporan/pdf';
 $route['Absensi/Laporan/excel'] = 'Absensi/Laporan/excel';
+$route['backup'] = 'backup/index';
+$route['backup/do_backup'] = 'backup/do_backup';
+$route['backup/restore'] = 'backup/restore';
+$route['backup/do_restore'] = 'backup/do_restore';
+$route['install'] = 'install/index';
+$route['install/run'] = 'install/run';
+
+

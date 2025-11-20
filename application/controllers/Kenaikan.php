@@ -44,29 +44,35 @@ class Kenaikan extends CI_Controller {
        🔹 FUNGSI UTAMA — SIMPAN RIWAYAT & TAMBAHKAN TAHUN BARU
        ======================================================= */
     private function proses_siswa_tahun($id_siswa, $kelas_lama, $kelas_baru, $tahun_baru)
-    {
-        // 1️⃣ Simpan riwayat tahun lama
-        $this->db->insert('siswa_history', [
-            'siswa_id' => $id_siswa,
-            'kelas_id' => $kelas_lama,
-            'tahun_id' => $this->tahun_aktif,
-            'status'   => 'aktif'
-        ]);
+{
+    // normalize nilai kelas_baru: treat empty string as NULL
+    $kelas_baru_fix = ($kelas_baru === '' || $kelas_baru === null) ? null : $kelas_baru;
 
-        // 2️⃣ Tambah entri tahun baru
+    // 1) Simpan riwayat tahun lama (kelas_lama bisa NULL)
+    $this->db->insert('siswa_history', [
+        'siswa_id' => $id_siswa,
+        'kelas_id' => $kelas_lama,
+        'tahun_id' => $this->tahun_aktif,
+        'status'   => 'aktif'
+    ]);
+
+    // 2) Hanya tambah entri siswa_tahun JIKA ada kelas tujuan
+    if ($kelas_baru_fix !== null) {
         $this->db->insert('siswa_tahun', [
             'siswa_id' => $id_siswa,
-            'kelas_id' => $kelas_baru,
+            'kelas_id' => $kelas_baru_fix,
             'tahun_id' => $tahun_baru,
             'status'   => 'aktif'
         ]);
-
-        // 3️⃣ Update tabel siswa (agar tampilan selalu data terbaru)
-        $this->db->where('id', $id_siswa)->update('siswa', [
-            'id_kelas' => $kelas_baru,
-            'tahun_id' => $tahun_baru
-        ]);
     }
+
+    // 3) Update tabel siswa (id_kelas boleh NULL)
+    $this->db->where('id', $id_siswa)->update('siswa', [
+        'id_kelas' => $kelas_baru_fix,
+        'tahun_id' => $tahun_baru
+    ]);
+}
+
 
 
     /* =======================================================

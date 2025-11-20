@@ -135,18 +135,34 @@ $group_absenqr = in_array($active, ['absensiqr_siswa','laporan_absensiqr']);
     </a>
     <div id="mSetting" class="collapse <?= $group_setting ? 'show' : '' ?>">
         <div class="bg-white py-2 collapse-inner rounded">
-            <a class="collapse-item <?= $active=='hari_libur'?'active':'' ?>" 
+            
+            <a class="collapse-item <?= $active=='hari_libur' ? 'active' : '' ?>" 
                 href="<?= base_url('index.php/HariLibur') ?>">Hari Libur</a>
 
-            <a class="collapse-item <?= $active=='tahun'?'active':'' ?>" 
+            <a class="collapse-item <?= $active=='tahun' ? 'active' : '' ?>" 
                 href="<?= site_url('tahun') ?>">Tahun Ajaran</a>
-            <a class="collapse-item <?= $active=='jadwal_absensi'?'active':'' ?>" 
+
+            <a class="collapse-item <?= $active=='jadwal_absensi' ? 'active' : '' ?>" 
                 href="<?= base_url('index.php/jadwalabsensi') ?>">
                 Setting Jam Absen
             </a>
+
+            <!-- 🌟 Tambahan Baru: Backup DB -->
+            <a class="collapse-item <?= $active=='backup_db' ? 'active' : '' ?>" 
+                href="<?= base_url('index.php/backup') ?>">
+                Backup Database
+            </a>
+
+            <!-- 🌟 Tambahan Baru: Restore DB -->
+            <a class="collapse-item <?= $active=='restore_db' ? 'active' : '' ?>" 
+                href="<?= base_url('index.php/backup/restore') ?>">
+                Restore Database
+            </a>
+
         </div>
     </div>
 </li>
+
 
 <?php endif; ?>
 
