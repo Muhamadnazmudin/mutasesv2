@@ -204,6 +204,12 @@ body:not(.dark-mode) header .btn-toggle i.fa-moon {
       <a class="dropdown-item" href="<?= base_url('index.php/SiswaAuth') ?>">
         <i class="fas fa-user-graduate text-success"></i> Login Siswa
       </a>
+      <li>
+  <a class="dropdown-item" href="<?= base_url('index.php/auth/login') ?>">
+    <i class="fas fa-chalkboard-teacher text-warning"></i> Login Wali Kelas
+  </a>
+</li>
+
     </li>
   </ul>
 </div>

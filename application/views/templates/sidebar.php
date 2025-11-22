@@ -2,23 +2,30 @@
 <?php $role = $this->session->userdata('role_name'); ?>
 <?php if (!isset($active)) $active = ''; ?>
 
-<!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
   <!-- Brand -->
-  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= site_url('dashboard') ?>">
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" 
+     href="<?= ($this->session->userdata('role_id') == 3) 
+              ? site_url('walikelas') 
+              : site_url('dashboard') ?>">
     <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-exchange-alt"></i></div>
     <div class="sidebar-brand-text mx-3">MUTASES</div>
   </a>
 
   <hr class="sidebar-divider my-0">
 
+  <!-- Dashboard -->
   <li class="nav-item <?= $active=='dashboard'?'active':'' ?>">
-    <a class="nav-link" href="<?= site_url('dashboard') ?>">
+    <a class="nav-link"
+       href="<?= ($this->session->userdata('role_id') == 3) 
+                ? site_url('walikelas') 
+                : site_url('dashboard') ?>">
       <i class="fas fa-fw fa-tachometer-alt"></i>
       <span>Dashboard</span>
     </a>
   </li>
+
 <?php
 $group_data   = in_array($active, ['guru','kelas','siswa']);
 $group_mutasi = in_array($active, ['mutasi','kenaikan','siswa_keluar','siswa_lulus','laporan']);

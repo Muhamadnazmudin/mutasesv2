@@ -74,3 +74,4 @@ $route['install'] = 'install/index';
 $route['install/run'] = 'install/run';
 
 
+
