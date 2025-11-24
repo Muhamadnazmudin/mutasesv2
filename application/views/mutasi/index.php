@@ -54,7 +54,7 @@
         <?php if($m->jenis == 'keluar'): ?>
           <?= $m->tujuan_sekolah ?: '-' ?>
         <?php else: ?>
-          <?= $m->tujuan_kelas ?: '-' ?>
+          <?= $m->tujuan_kelas_nama ?: '-' ?>
         <?php endif; ?>
       </td>
       <td><?= $m->tanggal ?></td>
@@ -148,7 +148,7 @@
 
           <div class="form-group">
             <label>Tujuan Sekolah / Kelas</label>
-            <input type="text" name="tujuan" value="<?= $m->tujuan_sekolah ?: $m->tujuan_kelas ?>" class="form-control">
+            <input type="text" name="tujuan" value="<?= $m->tujuan_sekolah ?: $m->tujuan_kelas_nama ?>" class="form-control">
           </div>
 
           <div class="form-group">
@@ -197,10 +197,14 @@
         </div>
 
         <div class="modal-body">
+
           <!-- CSRF -->
           <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" 
                  value="<?= $this->security->get_csrf_hash(); ?>">
 
+          <!-- ---------------------------------------------
+               JENIS MUTASI
+          ---------------------------------------------- -->
           <div class="form-row">
             <div class="form-group col-md-6">
               <label>Jenis Mutasi</label>
@@ -210,27 +214,65 @@
                 <option value="masuk">Mutasi Masuk</option>
               </select>
             </div>
+
             <div class="form-group col-md-6">
               <label>Tanggal</label>
               <input type="date" name="tanggal" class="form-control" required>
             </div>
           </div>
 
-          <div class="form-group">
-  <label>Cari Siswa</label>
-  <input type="text" id="search_siswa" class="form-control" placeholder="Ketik nama atau NIS siswa...">
-  <input type="hidden" name="siswa_id" id="siswa_id" required>
-  <div id="siswa_suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
+          <!-- ---------------------------------------------
+               CARI SISWA (HANYA UNTUK KELUAR)
+          ---------------------------------------------- -->
+          <div class="form-group keluar-only" style="display:none;">
+            <label>Cari Siswa</label>
+            <input type="text" id="search_siswa" class="form-control" placeholder="Ketik nama atau NIS siswa...">
+            <input type="hidden" name="siswa_id" id="siswa_id">
+            <div id="siswa_suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
+          </div>
+
+          <!-- ---------------------------------------------
+               INPUT MANUAL UNTUK MUTASI MASUK
+          ---------------------------------------------- -->
+          <div class="masuk-only" style="display:none;">
+    <div class="form-group">
+        <label>Nama Siswa</label>
+        <input type="text" name="nama_baru" class="form-control" placeholder="Nama lengkap siswa baru">
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>NIS</label>
+            <input type="text" name="nis_baru" class="form-control" placeholder="NIS siswa">
+        </div>
+
+        <div class="form-group col-md-6">
+            <label>NISN</label>
+            <input type="text" name="nisn_baru" class="form-control" placeholder="NISN siswa">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Jenis Kelamin</label>
+        <select name="jk_baru" class="form-control">
+            <option value="L">Laki-Laki</option>
+            <option value="P">Perempuan</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Sekolah Asal</label>
+        <input type="text" name="asal_sekolah_baru" class="form-control" placeholder="Nama sekolah asal siswa">
+    </div>
 </div>
 
 
-
-          <!-- Hanya untuk Mutasi Keluar -->
-          <div class="form-group keluar-only">
+          <!-- ---------------------------------------------
+               KHUSUS MUTASI KELUAR
+          ---------------------------------------------- -->
+          <div class="form-group keluar-only" style="display:none;">
             <label>Jenis Keluar</label>
-            <!-- 🔧 GANTI ALASAN_JENIS JADI JENIS_KELUAR -->
-<select name="jenis_keluar" id="jenis_keluar" class="form-control" onchange="toggleKeluarFields()">
-
+            <select name="jenis_keluar" id="jenis_keluar" class="form-control" onchange="toggleKeluarFields()">
               <option value="">-- Pilih Jenis Keluar --</option>
               <option value="mutasi">Mutasi ke Sekolah Lain</option>
               <option value="mengundurkan diri">Mengundurkan Diri</option>
@@ -238,22 +280,25 @@
             </select>
           </div>
 
-          <div class="form-group keluar-only" id="tujuanSekolahField">
+          <div class="form-group keluar-only" id="tujuanSekolahField" style="display:none;">
             <label>Tujuan Sekolah</label>
             <input type="text" name="tujuan_sekolah" class="form-control">
           </div>
 
-          <div class="form-group keluar-only" id="alasanField">
+          <div class="form-group keluar-only" id="alasanField" style="display:none;">
             <label>Alasan</label>
             <textarea name="alasan" class="form-control" rows="2"></textarea>
           </div>
-              <div class="form-group keluar-only" id="nohpOrtuField" style="display:none;">
-  <label>Nomor HP Orang Tua</label>
-  <input type="text" name="nohp_ortu" class="form-control" placeholder="Contoh: 081234567890">
-</div>
 
-          <!-- Hanya untuk Mutasi Masuk -->
-          <div class="form-group masuk-only" id="tujuanKelasField">
+          <div class="form-group keluar-only" id="nohpOrtuField" style="display:none;">
+            <label>Nomor HP Orang Tua</label>
+            <input type="text" name="nohp_ortu" class="form-control" placeholder="Contoh: 081234567890">
+          </div>
+
+          <!-- ---------------------------------------------
+               MUTASI MASUK → PILIH KELAS
+          ---------------------------------------------- -->
+          <div class="form-group masuk-only" id="tujuanKelasField" style="display:none;">
             <label>Tujuan Kelas (untuk Mutasi Masuk)</label>
             <select name="tujuan_kelas_id" class="form-control">
               <option value="">-- Pilih Kelas --</option>
@@ -263,6 +308,9 @@
             </select>
           </div>
 
+          <!-- ---------------------------------------------
+               TAHUN AJARAN
+          ---------------------------------------------- -->
           <div class="form-group">
             <label>Tahun Ajaran</label>
             <select name="tahun_id" class="form-control">
@@ -272,25 +320,27 @@
             </select>
           </div>
 
-          <!-- Upload Berkas -->
+          <!-- ---------------------------------------------
+               FILE PDF
+          ---------------------------------------------- -->
           <div class="form-group">
             <label>Berkas Mutasi (PDF, maks 500 KB)</label>
             <input type="file" name="berkas" id="berkas" class="form-control-file" accept=".pdf">
             <small class="text-muted d-block">Hanya file PDF &lt; 500 KB.</small>
-            <div id="previewFile" class="mt-2 text-info" style="display:none;">
-              <i class="fas fa-file-pdf"></i> <span id="fileName"></span>
-            </div>
           </div>
+
         </div>
 
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Simpan</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
         </div>
+
       </form>
     </div>
   </div>
 </div>
+
 <!-- =================== MODAL IMPORT EXCEL =================== -->
 <div class="modal fade" id="importModal">
   <div class="modal-dialog">
@@ -328,19 +378,38 @@
 <script>
 function toggleFields() {
   const jenis = document.getElementById('jenis').value;
-  document.querySelectorAll('.keluar-only').forEach(el => el.style.display = (jenis === 'keluar') ? 'block' : 'none');
-  document.querySelectorAll('.masuk-only').forEach(el => el.style.display = (jenis === 'masuk') ? 'block' : 'none');
+
+  // Show/hide untuk mutasi keluar
+  document.querySelectorAll('.keluar-only').forEach(el =>
+    el.style.display = (jenis === 'keluar') ? 'block' : 'none'
+  );
+
+  // Show/hide untuk mutasi masuk
+  document.querySelectorAll('.masuk-only').forEach(el =>
+    el.style.display = (jenis === 'masuk') ? 'block' : 'none'
+  );
+
+  // Jika jenis = masuk → kosongkan field pencarian
+  if (jenis === 'masuk') {
+    document.getElementById('siswa_id').value = "";
+    document.getElementById('search_siswa').value = "";
+  }
 }
 
 function toggleKeluarFields() {
   const jenisKeluar = document.getElementById('jenis_keluar').value;
-  document.getElementById('tujuanSekolahField').style.display = (jenisKeluar === 'mutasi') ? 'block' : 'none';
-document.getElementById('alasanField').style.display = 
-  (jenisKeluar === 'mengundurkan diri' || jenisKeluar === 'dikeluarkan' || jenisKeluar === 'lainnya') ? 'block' : 'none';
-document.getElementById('nohpOrtuField').style.display = 
-  (jenisKeluar !== 'meninggal') ? 'block' : 'none';
 
+  document.getElementById('tujuanSekolahField').style.display = 
+      (jenisKeluar === 'mutasi') ? 'block' : 'none';
+
+  document.getElementById('alasanField').style.display = 
+      (jenisKeluar === 'mengundurkan diri' || jenisKeluar === 'dikeluarkan' || jenisKeluar === 'lainnya') 
+      ? 'block' : 'none';
+
+  document.getElementById('nohpOrtuField').style.display =
+      (jenisKeluar !== 'meninggal') ? 'block' : 'none';
 }
+
 
 // ========== Preview File Upload & Validasi ==========
 const fileInput = document.getElementById('berkas');

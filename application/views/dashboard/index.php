@@ -16,28 +16,27 @@
 
 
 <div class="row g-4 mb-4">
-  <!-- KELAS -->
+
   <!-- JUMLAH ROMBEL -->
-<div class="col-md-4">
-  <div class="card border-left-primary shadow-sm h-100">
-    <div class="card-body">
-      <h5 class="fw-bold text-primary mb-3"><i class="fas fa-school"></i> Jumlah Rombel / Kelas</h5>
-      <table class="table table-bordered table-sm mb-0">
-        <thead class="table-light"><tr><th>Tingkat</th><th>Jumlah</th></tr></thead>
-        <tbody>
-          <tr><td>Kelas X</td><td><?= $rombel['x'] ?></td></tr>
-          <tr><td>Kelas XI</td><td><?= $rombel['xi'] ?></td></tr>
-          <tr><td>Kelas XII</td><td><?= $rombel['xii'] ?></td></tr>
-          <tr class="table-secondary fw-bold"><td>Total</td><td><?= $rombel['total'] ?></td></tr>
-        </tbody>
-      </table>
+  <div class="col-md-6">
+    <div class="card border-left-primary shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="fw-bold text-primary mb-3"><i class="fas fa-school"></i> Jumlah Rombel / Kelas</h5>
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-light"><tr><th>Tingkat</th><th>Jumlah</th></tr></thead>
+          <tbody>
+            <tr><td>Kelas X</td><td><?= $rombel['x'] ?></td></tr>
+            <tr><td>Kelas XI</td><td><?= $rombel['xi'] ?></td></tr>
+            <tr><td>Kelas XII</td><td><?= $rombel['xii'] ?></td></tr>
+            <tr class="table-secondary fw-bold"><td>Total</td><td><?= $rombel['total'] ?></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- SISWA AKTIF -->
-  <div class="col-md-4">
+  <div class="col-md-6">
     <div class="card border-left-success shadow-sm h-100">
       <div class="card-body">
         <h5 class="fw-bold text-success mb-3"><i class="fas fa-user-graduate"></i> Siswa Aktif</h5>
@@ -54,8 +53,13 @@
     </div>
   </div>
 
+</div>
+
+
+ <div class="row g-4 mb-4">
+
   <!-- SISWA KELUAR -->
-  <div class="col-md-4">
+  <div class="col-md-6">
     <div class="card border-left-danger shadow-sm h-100">
       <div class="card-body">
         <h5 class="fw-bold text-danger mb-3"><i class="fas fa-door-open"></i> Siswa Keluar</h5>
@@ -71,6 +75,25 @@
       </div>
     </div>
   </div>
+
+  <!-- SISWA MASUK -->
+  <div class="col-md-6">
+    <div class="card border-left-info shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="fw-bold text-info mb-3"><i class="fas fa-door-closed"></i> Siswa Masuk</h5>
+        <table class="table table-bordered table-sm mb-0">
+          <thead class="table-light"><tr><th>Tingkat</th><th>Jumlah</th></tr></thead>
+          <tbody>
+            <tr><td>Kelas X</td><td><?= $masuk['x'] ?></td></tr>
+            <tr><td>Kelas XI</td><td><?= $masuk['xi'] ?></td></tr>
+            <tr><td>Kelas XII</td><td><?= $masuk['xii'] ?></td></tr>
+            <tr class="table-secondary fw-bold"><td>Total</td><td><?= $masuk['total'] ?></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- SISWA LULUS -->

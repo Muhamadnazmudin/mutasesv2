@@ -1,0 +1,2 @@
+Qr code siswa (import/tambah) qrcode nya masuk kedalam folder mutases/uploads/qr.
+Izin Keluar Qrcode user nya masuk kedalam folder mutases/assets/qrcodes.

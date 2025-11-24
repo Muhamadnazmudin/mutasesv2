@@ -35,18 +35,145 @@ class Mutasi extends CI_Controller {
     if ($this->input->post()) {
 
         $jenis     = $this->input->post('jenis');
-        $siswa_id  = $this->input->post('siswa_id');
         $tahun_id  = $this->input->post('tahun_id');
 
-        // ============ VALIDASI SESSION =============
+        // ============ VALIDASI SESSION ============
         $created_by = $this->session->userdata('user_id');
         if (!$created_by) {
             $this->session->set_flashdata('error', 'Session login tidak valid.');
             redirect('auth/logout');
+        }
+
+        // ========================================================
+        // PROSES MUTASI MASUK (SISWA BARU)
+        // ========================================================
+        if ($jenis == 'masuk') {
+
+            // ---- Validasi minimal ----
+            if (empty($this->input->post('nama_baru'))) {
+                $this->session->set_flashdata('error', 'Nama siswa baru wajib diisi.');
+                redirect('mutasi');
+            }
+
+            // ---- Ambil data siswa baru ----
+            $data_siswa = [
+    'nis'           => $this->input->post('nis_baru'),
+    'nisn'          => $this->input->post('nisn_baru'),
+    'nama'          => $this->input->post('nama_baru'),
+    'jk'            => $this->input->post('jk_baru'),
+    'sekolah_asal'  => $this->input->post('asal_sekolah_baru'),
+    'id_kelas'      => $this->input->post('tujuan_kelas_id'),
+    'tahun_id'      => $tahun_id,
+    'status'        => 'aktif',
+];
+
+
+
+            // ---- Insert siswa baru ----
+            $this->db->insert('siswa', $data_siswa);
+            $siswa_id = $this->db->insert_id();
+            // ================== GENERATE QR OFFLINE OTOMATIS ==================
+require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
+
+$qr_folder = FCPATH . 'uploads/qr/';
+if (!file_exists($qr_folder)) {
+    mkdir($qr_folder, 0777, true);
+}
+
+// Token berdasarkan ID siswa
+$token = 'qr_' . $siswa_id;
+$qr_file = $qr_folder . $token . '.png';
+
+// Generate QR jika belum ada
+if (!file_exists($qr_file)) {
+    QRcode::png(
+        $token,
+        $qr_file,
+        QR_ECLEVEL_H,   // kualitas tinggi
+        10,             // size besar
+        2               // margin
+    );
+}
+
+// Update token_qr siswa
+$this->db->where('id', $siswa_id)->update('siswa', [
+    'token_qr' => $token
+]);
+
+
+            // ---- Buat siswa_tahun ----
+            $this->db->insert('siswa_tahun', [
+                'siswa_id' => $siswa_id,
+                'kelas_id' => $this->input->post('tujuan_kelas_id'),
+                'tahun_id' => $tahun_id,
+                'status'   => 'aktif'
+            ]);
+
+            // ---- Upload file mutasi (opsional) ----
+            $file_name = null;
+            if (!empty($_FILES['berkas']['name'])) {
+
+                $upload_path = './uploads/mutasi/';
+                if (!is_dir($upload_path)) mkdir($upload_path, 0777, TRUE);
+
+                $config['upload_path']   = $upload_path;
+                $config['allowed_types'] = 'pdf';
+                $config['encrypt_name']  = TRUE;
+                $config['max_size']      = 512;
+
+                $this->load->library('upload');
+                $this->upload->initialize($config);
+
+                if (!$this->upload->do_upload('berkas')) {
+                    $this->session->set_flashdata('error', $this->upload->display_errors());
+                    redirect('mutasi');
+                }
+
+                $file_name = $this->upload->data('file_name');
+            }
+
+            // ---- Insert mutasi masuk ----
+            $data_mutasi = [
+                'siswa_id'        => $siswa_id,
+                'kelas_asal_id'   => NULL, // tidak punya kelas asal
+                'jenis'           => 'masuk',
+                'tanggal'         => $this->input->post('tanggal'),
+                'tujuan_kelas_id' => $this->input->post('tujuan_kelas_id'),
+                'tujuan_sekolah'  => NULL,
+                'alasan'          => $this->input->post('alasan'),
+                'nohp_ortu'       => $this->input->post('nohp_ortu'),
+                'tahun_id'        => $tahun_id,
+                'berkas'          => $file_name,
+                'created_by'      => $created_by
+            ];
+
+            $this->db->insert('mutasi', $data_mutasi);
+
+            $this->session->set_flashdata('success', 'Mutasi siswa masuk berhasil disimpan.');
+            redirect('mutasi');
             return;
         }
 
-        // ========== UPLOAD PDF (opsional) ===========
+        // ========================================================
+        // PROSES MUTASI KELUAR (SISWA SUDAH ADA)
+        // ========================================================
+
+        $siswa_id = $this->input->post('siswa_id');
+
+        if (empty($siswa_id)) {
+            $this->session->set_flashdata('error', 'Siswa belum dipilih.');
+            redirect('mutasi');
+        }
+
+        // Ambil kelas asal dari siswa_tahun
+        $siswa_tahun = $this->db->get_where('siswa_tahun', [
+            'siswa_id' => $siswa_id,
+            'tahun_id' => $tahun_id
+        ])->row();
+
+        $kelas_asal_id = $siswa_tahun ? $siswa_tahun->kelas_id : NULL;
+
+        // ---- Upload file mutasi keluar ----
         $file_name = null;
         if (!empty($_FILES['berkas']['name'])) {
 
@@ -64,61 +191,34 @@ class Mutasi extends CI_Controller {
             if (!$this->upload->do_upload('berkas')) {
                 $this->session->set_flashdata('error', $this->upload->display_errors());
                 redirect('mutasi');
-                return;
             }
 
             $file_name = $this->upload->data('file_name');
         }
 
-        // ========== AMBIL KELAS ASAL DARI siswa_tahun ==========
-$siswa_tahun = $this->db->get_where('siswa_tahun', [
-    'siswa_id' => $siswa_id,
-    'tahun_id' => $tahun_id
-])->row();
-
-$kelas_asal_id = $siswa_tahun ? $siswa_tahun->kelas_id : null;
-// ========== NORMALISASI tujuan_kelas_id ==========
-$tujuan_kelas = $this->input->post('tujuan_kelas_id');
-
-// string kosong → NULL
-if ($tujuan_kelas === '' || $tujuan_kelas === null) {
-    $tujuan_kelas = null;
-}
-
-// mutasi keluar → selalu NULL (tidak pakai tujuan kelas)
-if ($jenis == 'keluar') {
-    $tujuan_kelas = null;
-}
-
-
-        // ========== DATA MUTASI ==========
+        // ---- Data mutasi keluar ----
         $data = [
             'siswa_id'        => $siswa_id,
             'kelas_asal_id'   => $kelas_asal_id,
-            'jenis'           => $jenis,
+            'jenis'           => 'keluar',
             'jenis_keluar'    => $this->input->post('jenis_keluar'),
             'tanggal'         => $this->input->post('tanggal'),
             'alasan'          => $this->input->post('alasan'),
             'nohp_ortu'       => $this->input->post('nohp_ortu'),
-            'tujuan_kelas_id' => $tujuan_kelas,
             'tujuan_sekolah'  => $this->input->post('tujuan_sekolah'),
+            'tujuan_kelas_id' => NULL,
             'tahun_id'        => $tahun_id,
             'berkas'          => $file_name,
             'created_by'      => $created_by
         ];
 
-        // ========== PROSES MUTASI ==========
-        if ($jenis == 'keluar') {
-            $this->Mutasi_model->mutasi_keluar($data);
-        } 
-        else if ($jenis == 'masuk') {
-            $this->Mutasi_model->mutasi_masuk($data);
-        }
+        $this->Mutasi_model->mutasi_keluar($data);
 
-        $this->session->set_flashdata('success', 'Mutasi siswa berhasil disimpan.');
+        $this->session->set_flashdata('success', 'Mutasi siswa keluar berhasil disimpan.');
         redirect('mutasi');
     }
 }
+
 
 public function edit($id)
 {
@@ -139,13 +239,23 @@ public function edit($id)
 
     // Data utama yang akan diupdate
     $data = [
-        'jenis'         => $this->input->post('jenis'),
-        'jenis_keluar'  => $jenis_keluar,  // ✅ Tambahkan kolom ini
-        'alasan'        => $this->input->post('alasan'),
-        'nohp_ortu'     => $nohp_ortu,     // ✅ Pastikan tetap ikut diupdate
-        'tanggal'       => $this->input->post('tanggal'),
-        'tahun_id'      => $this->input->post('tahun_id'),
-    ];
+    'jenis'         => $this->input->post('jenis'),
+    'jenis_keluar'  => $jenis_keluar,
+    'alasan'        => $this->input->post('alasan'),
+    'nohp_ortu'     => $nohp_ortu,
+    'tanggal'       => $this->input->post('tanggal'),
+    'tahun_id'      => $this->input->post('tahun_id'),
+];
+
+// Tujuan
+if ($this->input->post('jenis') == 'keluar') {
+    $data['tujuan_sekolah'] = $this->input->post('tujuan');
+    $data['tujuan_kelas_id'] = NULL;
+} else {
+    $data['tujuan_kelas_id'] = $this->input->post('tujuan_kelas_id');
+    $data['tujuan_sekolah'] = NULL;
+}
+
 
     // ==== Upload File (Opsional) ====
     if (!empty($_FILES['berkas']['name'])) {

@@ -32,7 +32,8 @@ class Dashboard extends CI_Controller {
 
         // siswa_tahun → status = aktif
         $data['aktif']   = $this->get_siswa_aktif_by_tingkat();
-
+        // mutasi siswa masuk
+        $data['masuk']   = $this->get_siswa_masuk_by_tingkat();
         // mutasi → jenis: keluar
         $data['keluar']  = $this->get_siswa_keluar_by_tingkat();
 
@@ -242,5 +243,40 @@ class Dashboard extends CI_Controller {
 
         $this->load->view('dashboard/mutasi_public', $data);
     }
+// ==========================================================
+// 🔹 SISWA MASUK PER TINGKAT (mutasi masuk)
+// ==========================================================
+private function get_siswa_masuk_by_tingkat()
+{
+    $out = ['x'=>0,'xi'=>0,'xii'=>0,'total'=>0];
+
+    // regex tingkat
+    $regex = [
+        'x'   => "^X( |$)",
+        'xi'  => "^XI( |$)",
+        'xii' => "^XII( |$)"
+    ];
+
+    foreach ($regex as $k => $r) {
+
+        $this->db->select('COUNT(m.id) AS jumlah');
+        $this->db->from('mutasi m');
+        $this->db->join('siswa s', 's.id = m.siswa_id', 'left');
+        $this->db->join('siswa_tahun st', 'st.siswa_id = s.id AND st.tahun_id = m.tahun_id', 'left');
+        $this->db->join('kelas k', 'k.id = st.kelas_id', 'left');
+
+        $this->db->where('m.jenis', 'masuk');          // HANYA MUTASI MASUK
+        $this->db->where('m.tahun_id', $this->tahun_id); // TAHUN AKTIF
+        $this->db->where("k.nama REGEXP '$r'");        // FILTER TINGKAT
+
+        $row = $this->db->get()->row();
+        $out[$k] = $row ? (int)$row->jumlah : 0;
+    }
+
+    $out['total'] = $out['x'] + $out['xi'] + $out['xii'];
+
+    return $out;
+}
+
 
 }

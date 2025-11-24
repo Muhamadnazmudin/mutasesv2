@@ -18,12 +18,13 @@ class Mutasi_model extends CI_Model {
     public function get_all($limit, $offset)
     {
         $this->db->select('
-            mutasi.*,
-            siswa.nama AS nama_siswa,
-            siswa.nis,
-            ktujuan.nama AS tujuan_kelas,
-            tahun_ajaran.tahun AS tahun_ajaran
-        ');
+    mutasi.*,
+    siswa.nama AS nama_siswa,
+    siswa.nis,
+    ktujuan.nama AS tujuan_kelas_nama,
+    tahun_ajaran.tahun AS tahun_ajaran
+');
+
         $this->db->from('mutasi');
         $this->db->join('siswa', 'siswa.id = mutasi.siswa_id', 'left');
         $this->db->join('kelas ktujuan', 'ktujuan.id = mutasi.tujuan_kelas_id', 'left');
@@ -293,5 +294,20 @@ class Mutasi_model extends CI_Model {
 
         return $this->db->limit(10)->get('siswa')->result();
     }
+    public function delete($id)
+{
+    // Hapus file berkas jika ada
+    $mutasi = $this->db->get_where('mutasi', ['id' => $id])->row();
+    if ($mutasi && $mutasi->berkas) {
+        $file_path = FCPATH . 'uploads/mutasi/' . $mutasi->berkas;
+        if (file_exists($file_path)) {
+            unlink($file_path);
+        }
+    }
+
+    // Hapus data mutasi
+    return $this->db->delete('mutasi', ['id' => $id]);
+}
+
 }
 
