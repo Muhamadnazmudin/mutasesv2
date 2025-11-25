@@ -91,8 +91,10 @@ td.label { width: 28mm; vertical-align: top; }
 
 <?php 
 $qr_url = base_url('index.php/izin/kembali/' . $izin->token_kembali);
-$qr_image = 'https://quickchart.io/qr?text=' . urlencode($qr_url) . '&size=160';
+$qr_image = 'https://quickchart.io/qr?text=' . urlencode($qr_url)
+    . '&size=260&margin=12&ecLevel=H';
 ?>
+
 
 <div class="border-box">
 
@@ -144,10 +146,10 @@ $qr_image = 'https://quickchart.io/qr?text=' . urlencode($qr_url) . '&size=160';
         <!-- <tr><td class="label">Jam Kembali</td><td>: <?= $izin->jam_masuk ?: '...........................' ?></td></tr> -->
         <tr><td class="label">Guru Mapel</td><td>: <?= $guru_mapel->nama ?></td></tr>
     </table>
-<br><br><br>
+
     <!-- QR CODE -->
     <div class="qr-box">
-        <img src="<?= $qr_image ?>"><br><br><br><br>
+        <img src="<?= $qr_image ?>"><br>
         <div style="font-size:9px; color:#666;">Scan untuk menandai siswa sudah kembali</div>
     </div>
 
