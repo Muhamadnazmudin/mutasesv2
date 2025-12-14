@@ -10,6 +10,10 @@ class Izin extends CI_Controller {
         $this->load->model('Guru_model');
         require_once APPPATH . 'libraries/phpqrcode/qrlib.php';
         $this->load->database();
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     // =======================================================================

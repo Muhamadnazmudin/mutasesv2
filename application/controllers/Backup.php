@@ -7,6 +7,10 @@ class Backup extends CI_Controller {
     {
         parent::__construct();
         $this->load->dbutil();
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     // ===========================

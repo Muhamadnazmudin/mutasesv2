@@ -13,6 +13,10 @@ class Kelas extends CI_Controller {
     $this->load->model('Kelas_model');
     $this->load->library(['form_validation', 'pagination', 'Spreadsheet_Lib']);
     $this->load->helper(['url', 'form']);
+    if (!$this->session->userdata('logged_in')) {
+            redirect('auth/login');
+            exit;
+    }
   }
 
   public function index($offset = 0)

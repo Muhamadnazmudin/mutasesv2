@@ -9,6 +9,10 @@ class Guru extends CI_Controller {
     $this->load->model('Guru_model');
     $this->load->library(['form_validation', 'pagination', 'Spreadsheet_Lib']);
     $this->load->helper(['url', 'form']);
+    if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
   }
 
   public function index($offset = 0) {

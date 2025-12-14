@@ -11,6 +11,10 @@ class DashboardMBG extends CI_Controller {
         $this->load->database();
         $this->load->model('Kelas_model');
         $this->load->model('Siswa_model');
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     public function index() 

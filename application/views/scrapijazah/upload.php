@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Scrap Data Ijazah — CI3</title>
+    <title>Export Data E-Ijazah</title>
 
     <style>
         body {
@@ -134,6 +134,110 @@
 .back-wrapper {
     text-align: center;
 }
+.table-wrapper {
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+table.school-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 420px;
+}
+
+.school-table th,
+.school-table td {
+    padding: 8px 6px;
+    border: 1px solid #e1e1e1;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.school-table th {
+    background: #f5f7fa;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.school-table td:nth-child(1) {
+    text-align: center;
+    width: 40px;
+}
+
+.school-table td:nth-child(2) {
+    width: 70px;
+    text-align: center;
+}
+
+.school-table td:nth-child(4) {
+    font-family: monospace;
+    font-size: 12px;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-decoration: none;
+    background: #f1f3f5;
+    color: #333;
+}
+
+.pagination span.active {
+    background: #007bff;
+    color: #fff;
+    font-weight: 600;
+}
+.school-section {
+    width: 60%;
+    margin: 0 auto 40px auto; /* tengah */
+}
+
+@media (max-width: 768px) {
+    .school-section {
+        width: 95%; /* HP full biar kebaca */
+    }
+}
+.refresh-wrapper {
+    display: flex;
+    justify-content: flex-end; /* ⬅️ ke kanan */
+    margin-bottom: 10px;
+}
+
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #121313ff;
+    border: 1px solid #dee2e6;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s ease;
+    width: 14%;
+    
+}
+
+.refresh-btn:hover {
+    background: #0c75ddff;
+}
+
 
     </style>
 </head>
@@ -168,8 +272,7 @@
    <hr>
 
 <div class="info">
-    Tips: Tong dipaksakeun teuing mun teu tyasa., 
-    tinggalken ngopi we.
+    Tips: Kalo gabisa, yaudah tinggalin aja., mending ngopii.,..
 </div>
 
 <div class="back-wrapper">
@@ -177,9 +280,68 @@
         <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
     </a>
 </div>
-
-        
+  
 </div>
+<hr>
+
+<div class="school-section">
+
+    <h3 style="font-size:15px;margin-bottom:10px;color:#333;text-align:center;">
+        Sekolah yang menggunakan fitur ini
+    </h3>
+    <div class="refresh-wrapper">
+    <button type="button" class="refresh-btn" onclick="window.location.reload()">
+        🔄 Refresh Data
+    </button>
+</div>
+
+
+    <?php if (!empty($schools)): ?>
+    <div class="table-wrapper">
+        <table class="school-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Jenjang</th>
+                    <th>Nama Sekolah</th>
+                    <th>Jumlah Siswa</th>
+                    <!-- <th>NPSN</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($schools as $i => $s): ?>
+                <tr>
+                    <td><?= $start_no + $i ?></td>
+                    <td><?= htmlspecialchars($s->jenjang) ?></td>
+                    <td><?= htmlspecialchars($s->nama_sekolah) ?></td>
+                    <td style="text-align:left;">
+    <?= number_format($s->jumlah_siswa, 0, ',', '.') ?>
+</td>
+                    <!-- <td><?= htmlspecialchars($s->npsn) ?></td> -->
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?= $pagination ?>
+
+    <?php else: ?>
+        <div style="font-size:13px;color:#777;text-align:center;">
+            Belum ada sekolah yang menggunakan fitur ini.
+        </div>
+    <?php endif; ?>
+
+</div>
+
+<?php if ($this->session->flashdata('auto_refresh')): ?>
+<script>
+    // tunggu sebentar biar download mulai
+    setTimeout(function () {
+        window.location.reload();
+    }, 1200);
+</script>
+<?php endif; ?>
 
 </body>
 </html>

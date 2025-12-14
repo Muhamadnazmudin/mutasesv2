@@ -13,12 +13,56 @@ class ScrapIjazah extends CI_Controller {
         parent::__construct();
         $this->load->helper(['url', 'file']);
         $this->load->library('upload');
+        $this->load->database();
     }
 
     public function index()
-    {
-        $this->load->view('scrapijazah/upload');
-    }
+{
+    $this->load->library('pagination');
+
+    $limit = 10;
+    $page  = $this->input->get('page');
+    if (!$page || $page < 1) $page = 1;
+
+    $offset = ($page - 1) * $limit;
+
+    $total = $this->db->count_all('scrap_ijazah_schools');
+
+    // ambil data sekolah (10 per halaman)
+    $data['schools'] = $this->db
+        ->order_by('created_at', 'DESC')
+        ->limit($limit, $offset)
+        ->get('scrap_ijazah_schools')
+        ->result();
+
+    // ==========================
+    // PAGINATION CONFIG
+    // ==========================
+    $config['base_url'] = site_url('scrapijazah');
+    $config['total_rows'] = $total;
+    $config['per_page'] = $limit;
+    $config['page_query_string'] = TRUE;
+    $config['query_string_segment'] = 'page';
+
+    // Styling pagination
+    $config['full_tag_open']   = '<div class="pagination">';
+    $config['full_tag_close']  = '</div>';
+    $config['num_tag_open']    = '<a>';
+    $config['num_tag_close']   = '</a>';
+    $config['cur_tag_open']    = '<span class="active">';
+    $config['cur_tag_close']   = '</span>';
+    $config['prev_link']       = '&laquo;';
+    $config['next_link']       = '&raquo;';
+
+    $this->pagination->initialize($config);
+
+    $data['pagination'] = $this->pagination->create_links();
+    $data['start_no']   = $offset + 1;
+
+    $this->load->view('scrapijazah/upload', $data);
+}
+
+
 
     public function process()
     {
@@ -121,6 +165,38 @@ class ScrapIjazah extends CI_Controller {
                     ];
                 }
             }
+// =======================================
+// SIMPAN DATA SEKOLAH PENGGUNA FITUR
+// =======================================
+if (!empty($rows)) {
+
+    $jenjang       = $rows[0]['jenis'];
+    $nama_sekolah  = $rows[0]['satuan_pendidikan'];
+    $npsn          = $rows[0]['npsn'];
+    $jumlah_siswa  = count($rows);
+
+    $cek = $this->db->get_where('scrap_ijazah_schools', [
+        'npsn' => $npsn
+    ])->row();
+
+    if ($cek) {
+        // jika sekolah sudah ada → update jumlah siswa
+        $this->db->where('npsn', $npsn)->update('scrap_ijazah_schools', [
+            'jumlah_siswa' => $jumlah_siswa,
+            'created_at'   => date('Y-m-d H:i:s')
+        ]);
+    } else {
+        // jika baru
+        $this->db->insert('scrap_ijazah_schools', [
+            'jenjang'       => $jenjang,
+            'nama_sekolah'  => $nama_sekolah,
+            'npsn'          => $npsn,
+            'jumlah_siswa'  => $jumlah_siswa,
+            'created_at'    => date('Y-m-d H:i:s')
+        ]);
+    }
+}
+
 
             // ---------------------------------------
             // Buat Excel
@@ -216,13 +292,11 @@ foreach ($rows as $r) {
             @unlink($filepath);
 
             // Download file Excel
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header("Content-Disposition: attachment; filename=\"$filename\"");
-            header('Content-Length: ' . filesize($tmpPath));
-            readfile($tmpPath);
+            $this->session->set_flashdata('auto_refresh', true);
+$this->session->set_flashdata('download_file', $filename);
+redirect('scrapijazah/download');
 
-            @unlink($tmpPath);
-            exit;
+
 
         } catch (Exception $e) {
             @unlink($filepath);
@@ -230,4 +304,33 @@ foreach ($rows as $r) {
             return $this->load->view('scrapijazah/upload', ['error' => $err]);
         }
     }
+    public function download()
+{
+    $filename = $this->session->flashdata('download_file');
+    if (!$filename) {
+        redirect('scrapijazah');
+    }
+
+    $path = sys_get_temp_dir().DIRECTORY_SEPARATOR.$filename;
+    if (!file_exists($path)) {
+        redirect('scrapijazah');
+    }
+
+    // header download
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+    header('Content-Length: ' . filesize($path));
+
+    readfile($path);
+    unlink($path);
+
+    // ⬇️ PENTING: reload halaman setelah download
+    echo '<script>
+        setTimeout(function(){
+            window.location.href = "'.site_url('scrapijazah').'";
+        }, 500);
+    </script>';
+    exit;
+}
+
 }

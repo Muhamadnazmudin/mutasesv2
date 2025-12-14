@@ -7,6 +7,10 @@ class Kartu_osis_template extends CI_Controller {
     {
         parent::__construct();
         $this->load->database();
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     // ===========================================================

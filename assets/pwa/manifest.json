@@ -1,0 +1,22 @@
+{
+	"name": "Sistem Mutasi Siswa",
+	"short_name": "Mutases",
+	"start_url": "/mutases/",
+	"scope": "/mutases/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#0d6efd",
+	"orientation": "portrait",
+	"icons": [
+		{
+			"src": "/mutases/assets/pwa/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/mutases/assets/pwa/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}

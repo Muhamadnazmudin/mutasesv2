@@ -15,6 +15,10 @@ class Siswa extends CI_Controller {
     $this->load->library(['form_validation', 'pagination', 'Spreadsheet_Lib']);
     $this->load->helper(['url', 'form']);
     $this->load->library('idcard_lib');
+    if (!$this->session->userdata('logged_in')) {
+            redirect('auth/login');
+            exit;
+    }
   }
 
   public function index($offset = 0)

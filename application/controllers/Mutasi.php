@@ -12,6 +12,10 @@ class Mutasi extends CI_Controller {
     $this->load->model(['Mutasi_model','Siswa_model']);
     $this->load->library(['pagination','form_validation']);
     $this->load->helper(['url','form']);
+    if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
   }
 
  public function index($offset = 0)

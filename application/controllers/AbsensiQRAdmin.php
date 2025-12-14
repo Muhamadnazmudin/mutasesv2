@@ -15,6 +15,10 @@ class AbsensiQRAdmin extends CI_Controller {
         // coba load pdf library (jika ada wrapper). Jika tidak, controller akan fallback ke TCPDF di third_party.
         // Jangan hapus; wrapper sering ada di project CI
         @$this->load->library('pdf');
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     // 1) Halaman list absensi QR

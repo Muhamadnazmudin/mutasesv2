@@ -3,57 +3,84 @@
 html, body {
     height: 100%;
     margin: 0;
-    overflow: hidden !important;
 }
 
-/* SIDEBAR */
+/* ================= SIDEBAR ================= */
 #accordionSidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
-    overflow-y: auto;
     width: 224px;
+    overflow-y: auto;
     z-index: 1032;
+    transition: all .3s ease;
 }
 
-/* CONTENT */
+/* ================= CONTENT ================= */
 #content-wrapper {
     margin-left: 224px;
-    height: 100vh;
-    overflow-y: auto;
+    min-height: 100vh;
     padding-top: 70px;
-    background-color: #e7f9e7; /* hijau muda lembut */
+    background-color: #e7f9e7;
+    transition: all .3s ease;
 }
 
-/* TOPBAR */
+/* ================= TOPBAR ================= */
 .topbar {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 224px;
     right: 0;
     z-index: 1031;
-    background-color: #28a745 !important; /* hijau seragam */
+    background-color: #28a745 !important;
+    transition: all .3s ease;
 }
 
-/* SIDEBAR TOGGLE MODE */
+/* ===== DESKTOP TOGGLE ===== */
 .sidebar-toggled #accordionSidebar {
-    width: 80px !important;
+    width: 80px;
 }
 
 .sidebar-toggled #content-wrapper {
-    margin-left: 80px !important;
+    margin-left: 80px;
 }
 
 .sidebar-toggled .topbar {
-    left: 80px !important;
+    left: 80px;
 }
 
-/* Animasi */
-#accordionSidebar,
-#content-wrapper,
-.topbar {
-    transition: all 0.25s ease-in-out;
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+
+    #accordionSidebar {
+        left: -224px;
+    }
+
+    #accordionSidebar.show {
+        left: 0;
+    }
+
+    #content-wrapper {
+        margin-left: 0 !important;
+        padding-top: 60px;
+    }
+
+    .topbar {
+        left: 0 !important;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 1030;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
 }
 
 </style>
@@ -128,6 +155,10 @@ html, body {
 
 <!-- ========== TOPBAR ========== -->
 <nav class="navbar navbar-expand navbar-dark topbar mb-4 static-top shadow">
+  <button class="btn btn-sm btn-outline-light me-2 d-md-none" id="btnToggleSidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
 
     <ul class="navbar-nav ml-auto align-items-center">
 
@@ -152,6 +183,28 @@ html, body {
 <!-- ============================ -->
 
 <!-- Content Wrapper -->
+ <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div id="content-wrapper" class="d-flex flex-column">
+
+<script>
+const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+const sidebar = document.getElementById('accordionSidebar');
+const overlay = document.getElementById('sidebarOverlay');
+
+if (btnToggleSidebar) {
+  btnToggleSidebar.addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+}
+
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+}
+</script>
+
 
 

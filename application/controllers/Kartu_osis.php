@@ -11,6 +11,10 @@ class Kartu_osis extends CI_Controller {
         // model untuk kelas (jika belum punya, ini aman)
         if (file_exists(APPPATH . "models/Kelas_model.php")) {
             $this->load->model("Kelas_model");
+            if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
         }
     }
 

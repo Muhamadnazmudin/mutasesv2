@@ -16,6 +16,10 @@ class Kenaikan extends CI_Controller {
 
         // Tahun ajaran aktif
         $this->tahun_aktif = $this->Tahun_model->get_aktif()->id;
+        if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
     }
 
     public function index() {

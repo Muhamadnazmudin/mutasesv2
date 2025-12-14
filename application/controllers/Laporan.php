@@ -11,6 +11,10 @@ class Laporan extends CI_Controller {
     $this->load->model('Laporan_model');
     $this->load->library('pdf'); // library TCPDF
     $this->load->library('Spreadsheet_Lib'); // untuk export Excel
+    if (!$this->session->userdata('logged_in')) {
+            redirect('dashboard');
+            exit;
+    }
   }
 
   public function index() {
