@@ -11,7 +11,7 @@
         <a href="https://www.profilsaya.my.id" target="_blank" class="text-decoration-none text-primary fw-bold">
           M. Nazmudin
         </a> 
-        — Sistem Mutasi Siswa
+        — Sistem Informasi Siswa dan GTK
       </span>
     </div>
   </div>

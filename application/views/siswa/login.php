@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login Siswa - Mutases</title>
+  <title>Login Siswa - SimSGTK</title>
   
   <!-- Bootstrap -->
   <link href="<?= base_url('assets/sbadmin2/vendor/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
@@ -159,7 +159,7 @@
         </div>
 
         <div class="footer-text">
-          © <?= date('Y') ?> <a href="#">Mutases</a> — Sistem Mutasi Siswa
+          © <?= date('Y') ?> <a href="#">SimSGTK</a> — Sistem Informasi Siswa dan GTK
         </div>
 
       </div>

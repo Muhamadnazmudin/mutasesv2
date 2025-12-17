@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login - Mutases</title>
+  <title>Login - SimSGTK</title>
   
   <!-- Bootstrap -->
   <link href="<?= base_url('assets/sbadmin2/vendor/bootstrap/css/bootstrap.min.css') ?>" rel="stylesheet">
@@ -127,7 +127,7 @@
       <div class="col-md-5 col-lg-4">
         <div class="card login-card">
           <div class="card-header">
-            <h4><i class="fas fa-exchange-alt me-2"></i>Login Mutases</h4>
+            <h4><i class="fas fa-exchange-alt me-2"></i>Login SimSGTK</h4>
           </div>
           <div class="card-body p-4">
 
@@ -171,7 +171,7 @@
           </div>
         </div>
         <div class="footer-text">
-          © <?= date('Y') ?> <a href="#">Mutases</a> — Sistem Mutasi Siswa
+          © <?= date('Y') ?> <a href="#">SimSGTK </a> — Sistem Informasi Siswa dan GTK
         </div>
       </div>
     </div>

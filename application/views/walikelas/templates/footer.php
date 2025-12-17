@@ -12,7 +12,7 @@
                     <a href="https://www.profilsaya.my.id" target="_blank" class="text-decoration-none text-primary fw-bold">
                         M. Nazmudin
                     </a> 
-                    — Sistem Mutasi Siswa (Wali Kelas)
+                    — Sistem Informasi Siswa dan GTK (Wali Kelas)
                 </span>
             </div>
         </div>

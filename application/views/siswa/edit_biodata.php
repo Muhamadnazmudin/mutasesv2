@@ -95,48 +95,79 @@ $penghasilan_list = [
         }
 
         /* WA floating style (modern) */
-        .wa-floating {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            background: #25d366;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            z-index: 99999;
-            cursor: pointer;
-            transition: transform .15s;
-            pointer-events: none; /* nonaktif sampai save sukses */
-            opacity: 0.6;
-        }
-        .wa-floating.enabled {
-            pointer-events: auto;
-            opacity: 1;
-            animation: pulse 1.6s infinite;
-        }
-        .wa-icon {
-            width: 32px;
-            height: 32px;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.12); }
-            100% { transform: scale(1); }
-        }
-        @media (max-width: 576px) {
-            .wa-floating {
-                width: 52px;
-                height: 52px;
-                bottom: 18px;
-                right: 18px;
-            }
-            .wa-icon { width: 28px; height: 28px; }
-        }
-        input[readonly] { background: #f3f6fb; }
+.wa-floating {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+
+    /* 🔒 DEFAULT: belum ada perubahan */
+    background: transparent;
+    border: 2px dashed #9a9a9aff;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: none;
+    z-index: 99999;
+    cursor: default;
+
+    pointer-events: none;
+    opacity: 0.5;
+
+    transition: all .25s ease;
+}
+
+/* ✅ AKTIF: setelah simpan perubahan */
+.wa-floating.enabled {
+    background: #25d366;
+    border: none;
+    box-shadow: 0 6px 16px rgba(37,211,102,.45);
+
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+
+    animation: pulse 1.6s infinite;
+}
+
+/* icon */
+.wa-icon {
+    width: 32px;
+    height: 32px;
+    filter: grayscale(100%);
+    transition: filter .25s ease;
+}
+
+/* icon ikut aktif */
+.wa-floating.enabled .wa-icon {
+    filter: grayscale(0%);
+}
+
+@keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 576px) {
+    .wa-floating {
+        width: 52px;
+        height: 52px;
+        bottom: 18px;
+        right: 18px;
+    }
+    .wa-icon { width: 28px; height: 28px; }
+}
+
+input[readonly] {
+    background: #f3f6fb;
+}
+
+        
     </style>
 
     <!-- FORM -->
@@ -179,7 +210,7 @@ $penghasilan_list = [
 
                     <tr>
                         <td class="bio-label">Tempat Lahir</td>
-                        <td><input type="text" name="tempat_lahir" value="<?= $siswa->tempat_lahir ?>"></td>
+                        <td><input type="text" name="tempat_lahir" value="<?= $siswa->tempat_lahir ?>"readonly></td>
                     </tr>
 
                     <tr>
@@ -249,11 +280,11 @@ $penghasilan_list = [
                 </table>
 
                 <!-- B. KESEJAHTERAAN -->
-                <div class="section-title">B. KESEJAHTERAAN PESERTA DIDIK</div>
+                <!-- <div class="section-title">B. KESEJAHTERAAN PESERTA DIDIK</div>
                 <table class="table bio-table">
                     <tr><td class="bio-label">Penerima KPS</td><td><input type="text" name="penerima_kps" value="<?= $siswa->penerima_kps ?>"></td></tr>
                     <tr><td class="bio-label">Nomor KPS</td><td><input type="text" name="no_kps" value="<?= $siswa->no_kps ?>"></td></tr>
-                </table>
+                </table> -->
 
                 <!-- C. DATA PERIODIK -->
                 <div class="section-title">C. DATA PERIODIK</div>
@@ -268,7 +299,7 @@ $penghasilan_list = [
                 <div class="section-title">D. DATA PENDIDIKAN</div>
                 <table class="table bio-table">
                     <tr><td class="bio-label">Sekolah Asal</td><td><input type="text" name="sekolah_asal" value="<?= $siswa->sekolah_asal ?>"></td></tr>
-                    <tr><td class="bio-label">Nomor SKHUN</td><td><input type="text" name="skhun" value="<?= $siswa->skhun ?>"></td></tr>
+                    <tr><td class="bio-label">Nomor Ijazah SMP</td><td><input type="text" name="skhun" value="<?= $siswa->skhun ?>"></td></tr>
                 </table>
 
                 <!-- E. DATA AYAH KANDUNG -->
@@ -439,6 +470,7 @@ $penghasilan_list = [
 <div id="waBtn" class="wa-floating" title="Laporkan perubahan ke admin">
     <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" class="wa-icon" alt="WA">
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // auto close existing alert
@@ -518,54 +550,78 @@ $penghasilan_list = [
         }
 
         // Save AJAX
-        saveBtn.addEventListener('click', function(e) {
-            const formValues = getFormValues();
-            const rawChanges = computeChanges(oldData, formValues);
+saveBtn.addEventListener('click', function(e) {
+    const formValues = getFormValues();
+    const rawChanges = computeChanges(oldData, formValues);
+    const filteredChanges = filterWaliIfNeeded(rawChanges, formValues);
 
-            // FILTER DATA WALI
-            const filteredChanges = filterWaliIfNeeded(rawChanges, formValues);
+    const fd = new FormData(form);
 
-            const fd = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin'
+    })
+    .then(async response => {
+        if (!response.ok) throw new Error('Server error ' + response.status);
 
-            fetch(form.action, {
-                method: 'POST',
-                body: fd,
-                credentials: 'same-origin'
-            })
-            .then(async response => {
-                if (!response.ok) throw new Error('Server error ' + response.status);
+        let data = null;
+        try { data = await response.json(); } catch (_) {}
 
-                let data = null;
-                try { data = await response.json(); } catch(_) {}
+        // update csrf
+        if (data && data.csrf_hash) {
+            form.querySelector("input[name='<?= $csrf_name ?>']").value = data.csrf_hash;
+        }
 
-                // update csrf
-                if (data && data.csrf_hash) {
-                    form.querySelector("input[name='<?= $csrf_name ?>']").value = data.csrf_hash;
-                }
+        // ❌ TIDAK ADA PERUBAHAN
+        if (filteredChanges.length === 0) {
+            waBtnDiv.classList.remove('enabled');
+            waBtnDiv.classList.add('disabled');
 
-                // simpan perubahan
-                oldData = Object.assign({}, oldData, formValues);
-                lastFormValues = formValues;
-                lastChanges = filteredChanges;
-
-                // WA enable apabila ada perubahan
-                if (lastChanges.length > 0) {
-                    waBtnDiv.classList.add('enabled');
-                    if (!waBtnDiv.dataset.bound) {
-                        waBtnDiv.dataset.bound = "1";
-                        waBtnDiv.addEventListener("click", openWhatsAppWithChanges);
-                    }
-                    showTempAlert("Perubahan berhasil disimpan. Klik WhatsApp untuk laporkan.", "success");
-                } else {
-                    waBtnDiv.classList.remove('enabled');
-                    showTempAlert("Perubahan berhasil disimpan.", "success");
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Gagal menyimpan perubahan.");
+            Swal.fire({
+                icon: 'info',
+                title: 'Tidak ada perubahan',
+                text: 'Data tidak mengalami perubahan.',
+                width: '360px',
+                background: '#2f3446',
+                color: '#eaeaea',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#3498db'
             });
+            return;
+        }
+
+        // ✅ ADA PERUBAHAN → AKTIFKAN WA
+        oldData = Object.assign({}, oldData, formValues);
+        lastFormValues = formValues;
+        lastChanges = filteredChanges;
+
+        waBtnDiv.classList.remove('disabled');
+        waBtnDiv.classList.add('enabled');
+
+        if (!waBtnDiv.dataset.bound) {
+            waBtnDiv.dataset.bound = "1";
+            waBtnDiv.addEventListener("click", openWhatsAppWithChanges);
+        }
+
+        showTempAlert(
+            'Perubahan data berhasil disimpan.<br>Silakan klik WhatsApp untuk melaporkan.'
+        );
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Terjadi kesalahan saat menyimpan data.',
+            width: '360px',
+            background: '#2f3446',
+            color: '#eaeaea',
+            confirmButtonText: 'Ok',
+            confirmButtonColor: '#e74c3c'
         });
+    });
+});
 
         // WA popup
         function openWhatsAppWithChanges() {
@@ -594,21 +650,27 @@ $penghasilan_list = [
             window.open(url, "_blank");
         }
 
-        // Show alert temporary
-        function showTempAlert(text, type='success') {
-            const container = document.querySelector('.container-fluid');
-            const wrap = document.createElement('div');
-            wrap.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                <i class="fas fa-info-circle"></i> ${text}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>`;
-            container.prepend(wrap);
+        function showTempAlert(text) {
+    Swal.fire({
+        title: 'Berhasil!',
+        html: `<p style="margin-top:6px">${text}</p>`,
+        width: '360px',
+        padding: '1.5rem',
+        background: '#2f3446',
+        color: '#eaeaea',
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#2ecc71',
 
-            setTimeout(() => {
-                const el = wrap.querySelector('.alert');
-                if (el) new bootstrap.Alert(el).close();
-            }, 3500);
+        // ✨ smooth animation
+        showClass: {
+            popup: 'swal2-show swal2-animate-smooth'
+        },
+        hideClass: {
+            popup: 'swal2-hide swal2-animate-smooth'
         }
+    });
+}
+
 
         // AUTO PENGHASILAN AYAH/IBU/WALI
         function setupAutoPenghasilan(mapping) {

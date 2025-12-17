@@ -9,18 +9,30 @@ use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
 class Siswa extends CI_Controller {
 
-  public function __construct() {
+ public function __construct() {
     parent::__construct();
+
     $this->load->model('Siswa_model');
     $this->load->library(['form_validation', 'pagination', 'Spreadsheet_Lib']);
-    $this->load->helper(['url', 'form']);
+    $this->load->helper(['url', 'form', 'tanggal']);
     $this->load->library('idcard_lib');
-     $this->load->helper('tanggal');
-    if (!$this->session->userdata('logged_in')) {
+
+    // ===============================
+    // AUTH GUARD (EXCEPT PDF)
+    // ===============================
+    $public_methods = [
+        'cetak',
+        'surat_pernyataan'
+    ];
+
+    if (!in_array($this->router->fetch_method(), $public_methods)) {
+        if (!$this->session->userdata('logged_in')) {
             redirect('auth/login');
             exit;
+        }
     }
-  }
+}
+
 
   public function index($offset = 0)
 {
@@ -893,6 +905,7 @@ public function cetak($id)
     // Output PDF ke browser
     $mode = $this->input->get('download') ? 'D' : 'I';
 $pdf->Output($fileName, $mode);
+exit;
 
 }
 public function cetak_semua()

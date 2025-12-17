@@ -11,7 +11,7 @@ if (!isset($active)) $active = '';
   <a class="sidebar-brand d-flex align-items-center justify-content-center" 
      href="<?= ($role_id == 3) ? site_url('walikelas') : site_url('dashboard') ?>">
     <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-exchange-alt"></i></div>
-    <div class="sidebar-brand-text mx-3">MUTASES</div>
+    <div class="sidebar-brand-text mx-3">SimSGTK</div>
   </a>
 
   <hr class="sidebar-divider my-0">
@@ -32,6 +32,7 @@ $group_absen   = in_array($active, ['absensi','laporan_absensi']);
 $group_izin    = in_array($active, ['izin','laporan_izin']);
 $group_setting = in_array($active, ['hari_libur','tahun','jadwal_absensi']);
 $group_qr      = in_array($active, ['absensiqr_siswa','laporan_absensiqr']);
+$group_verval = in_array($active, ['verval_siswa','laporan_verval']);
 ?>
 
 <hr class="sidebar-divider">
@@ -114,6 +115,27 @@ $group_qr      = in_array($active, ['absensiqr_siswa','laporan_absensiqr']);
         <div class="bg-white py-2 collapse-inner rounded">
             <a class="collapse-item" href="<?= site_url('izin') ?>">Izin Keluar Siswa</a>
             <a class="collapse-item" href="<?= site_url('izin/laporan') ?>">Laporan Izin</a>
+        </div>
+    </div>
+</li>
+<!-- ==============================
+     VERVAl DATA (ADMIN)
+================================= -->
+<li class="nav-item <?= $group_verval ? 'active' : '' ?>">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#mVervalAdmin">
+        <i class="fas fa-check-double"></i>
+        <span>Verval Data</span>
+    </a>
+    <div id="mVervalAdmin" class="collapse <?= $group_verval ? 'show' : '' ?>">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item <?= $active=='verval_siswa'?'active':'' ?>" 
+               href="<?= site_url('verval/siswa') ?>">
+               Verval Siswa
+            </a>
+            <a class="collapse-item <?= $active=='laporan_verval'?'active':'' ?>" 
+               href="<?= site_url('verval/laporan') ?>">
+               Laporan Verval
+            </a>
         </div>
     </div>
 </li>

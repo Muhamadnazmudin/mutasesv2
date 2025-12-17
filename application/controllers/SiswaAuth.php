@@ -12,6 +12,7 @@ class SiswaAuth extends CI_Controller {
 
     public function index() {
         $this->load->view('siswa/login');
+        // $this->load->view('siswa/maintenance');
     }
 
     public function cek_login() {
