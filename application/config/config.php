@@ -23,8 +23,31 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http");
-$config['base_url'] .= "://".$_SERVER['HTTP_HOST']."/mutases/";
+$protocol = 'http';
+if (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+    || (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === 'https')
+) {
+    $protocol = 'https';
+}
+
+// HOST (pakai HTTP_HOST)
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+
+// Jika mutases terpasang di subfolder, tambahkan trailing path.
+// Contoh: jika akses via https://4cad.../mutases/, set $subdir = '/mutases/';
+$subdir = rtrim(str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']), '/');
+if ($subdir === '') {
+    $subdir = '/';
+} else {
+    $subdir = $subdir . '/';
+}
+
+// Build base_url dan pastikan trailing slash
+$config['base_url'] = $protocol . '://' . $host . $subdir;
+
 
 
 /*
