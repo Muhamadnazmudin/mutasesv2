@@ -130,19 +130,19 @@
     <i class="fas fa-trash"></i>
   </a>
 
-  <!-- <a href="<?= site_url('siswa/cetak/'.$s->id) ?>" 
+  <a href="<?= site_url('siswa/cetak/'.$s->id) ?>" 
      class="btn btn-info btn-sm" 
      target="_blank"
      title="Cetak Formulir">
-    <i class="fas fa-print"></i>
-  </a> -->
+    <i class="fas fa-id-card"></i>
+  </a>
 
   <!-- 🔹 Tombol Cetak ID Card -->
-  <a href="<?= site_url('idcard/cetak/'.$s->id) ?>" 
+  <!-- <a href="<?= site_url('idcard/cetak/'.$s->id) ?>" 
    class="btn btn-primary btn-sm"
    title="Download ID Card JPG">
    <i class="fas fa-id-card"></i>
-</a>
+</a> -->
 <!-- 🔹 Tombol Cetak Surat Pernyataan -->
 <a href="<?= site_url('siswa/surat_pernyataan/'.$s->id) ?>"
    class="btn btn-info btn-sm"

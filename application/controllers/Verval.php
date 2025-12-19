@@ -53,6 +53,7 @@ if ($keyword) {
              ->group_end();
 }
 
+
     // ===============================
     // Hitung total rows
     // ===============================
@@ -121,8 +122,11 @@ if ($keyword) {
         kelas.id,
         kelas.nama AS nama_kelas,
         COUNT(siswa.id) AS total_siswa,
-        SUM(CASE WHEN siswa.status_verval = 1 THEN 1 ELSE 0 END) AS sudah_verval,
+        SUM(CASE WHEN siswa.status_verval = 1 THEN 1 ELSE 0 END) AS valid,
+        SUM(CASE WHEN siswa.status_verval = 2 THEN 1 ELSE 0 END) AS perbaikan,
+        SUM(CASE WHEN siswa.status_verval IN (1,2) THEN 1 ELSE 0 END) AS sudah_verval,
         SUM(CASE WHEN siswa.status_verval = 0 THEN 1 ELSE 0 END) AS belum_verval
+
     ');
     $this->db->from('kelas');
     $this->db->join('siswa', 'siswa.id_kelas = kelas.id AND siswa.status = "aktif"', 'left');
@@ -141,60 +145,17 @@ if ($keyword) {
     $this->load->view('verval/laporan_verval', $data);
     $this->load->view('templates/footer');
 }
-
-//     public function valid($id)
-// {
-//     $this->db->where('id', $id)->update('siswa', [
-//         'status_verval' => 1,
-//         'verval_by' => $this->session->userdata('user_id'),
-//         'verval_at' => date('Y-m-d H:i:s')
-//     ]);
-
-//     redirect('verval/siswa');
-// }
-
-// public function tolak($id)
-// {
-//     $this->db->where('id', $id)->update('siswa', [
-//         'status_verval' => 2,
-//         'verval_by' => $this->session->userdata('user_id'),
-//         'verval_at' => date('Y-m-d H:i:s')
-//     ]);
-
-//     redirect('verval/siswa');
-// }
-public function set($id, $status)
-{
-    // proteksi dasar
-    if (!in_array($status, ['0','1'])) {
-        show_error('Status tidak valid');
-    }
-
-    $this->db->where('id', $id)->update('siswa', [
-        'status_verval' => $status,
-        'verval_by'     => $this->session->userdata('user_id'),
-        'verval_at'     => date('Y-m-d H:i:s')
-    ]);
-
-    redirect('verval/siswa');
-}
 public function export_excel()
 {
-    $kelas_id = $this->input->get('kelas'); // boleh null
+    $kelas_id = $this->input->get('kelas');
 
     // ===============================
-    // Ambil kelas (1 atau semua)
+    // Ambil kelas
     // ===============================
     if ($kelas_id) {
-        $kelas_list = $this->db
-            ->where('id', $kelas_id)
-            ->get('kelas')
-            ->result();
+        $kelas_list = $this->db->where('id', $kelas_id)->get('kelas')->result();
     } else {
-        $kelas_list = $this->db
-            ->order_by('nama', 'ASC')
-            ->get('kelas')
-            ->result();
+        $kelas_list = $this->db->order_by('nama', 'ASC')->get('kelas')->result();
     }
 
     if (empty($kelas_list)) {
@@ -207,7 +168,7 @@ public function export_excel()
     foreach ($kelas_list as $kelas) {
 
         // ===============================
-        // Ambil siswa AKTIF per kelas
+        // Ambil siswa aktif per kelas
         // ===============================
         $siswa = $this->db
             ->select('nisn, nama, status_verval')
@@ -217,41 +178,95 @@ public function export_excel()
             ->get('siswa')
             ->result();
 
-        // Buat sheet
-        if ($sheetIndex == 0) {
-            $sheet = $spreadsheet->getActiveSheet();
-        } else {
-            $sheet = $spreadsheet->createSheet();
+        // ===============================
+        // HITUNG REKAP (LOGIKA BENAR)
+        // ===============================
+        $total = count($siswa);
+        $valid = 0;
+        $perbaikan = 0;
+        $sudah = 0;
+        $belum = 0;
+
+        foreach ($siswa as $s) {
+            if ($s->status_verval == 1) {
+                $valid++;
+                $sudah++;
+            } elseif ($s->status_verval == 2) {
+                $perbaikan++;
+                $sudah++;
+            } else {
+                $belum++;
+            }
         }
 
-        $sheet->setTitle(substr($kelas->nama, 0, 31)); // batas nama sheet excel
+        // ===============================
+        // Sheet
+        // ===============================
+        $sheet = ($sheetIndex == 0)
+            ? $spreadsheet->getActiveSheet()
+            : $spreadsheet->createSheet();
+
+        $sheet->setTitle(substr($kelas->nama, 0, 31));
         $sheetIndex++;
 
         // ===============================
-        // HEADER
+        // HEADER REKAP
         // ===============================
-        $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'NISN');
-        $sheet->setCellValue('C1', 'Nama Siswa');
-        $sheet->setCellValue('D1', 'Status Verval');
+        $sheet->setCellValue('A1', 'Kelas');
+        $sheet->setCellValue('B1', $kelas->nama);
 
-        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
+        $sheet->setCellValue('A3', 'Total Siswa');
+        $sheet->setCellValue('B3', $total);
+
+        $sheet->setCellValue('A4', 'Valid');
+        $sheet->setCellValue('B4', $valid);
+
+        $sheet->setCellValue('A5', 'Perlu Perbaikan');
+        $sheet->setCellValue('B5', $perbaikan);
+
+        $sheet->setCellValue('A6', 'Sudah Verval');
+        $sheet->setCellValue('B6', $sudah);
+
+        $sheet->setCellValue('A7', 'Belum Verval');
+        $sheet->setCellValue('B7', $belum);
+
+        $sheet->getStyle('A1:A7')->getFont()->setBold(true);
 
         // ===============================
-        // DATA
+        // HEADER TABEL
         // ===============================
-        $row = 2;
+        $rowStart = 9;
+        $sheet->setCellValue("A{$rowStart}", 'No');
+        $sheet->setCellValue("B{$rowStart}", 'NISN');
+        $sheet->setCellValue("C{$rowStart}", 'Nama Siswa');
+        $sheet->setCellValue("D{$rowStart}", 'Status');
+
+        $sheet->getStyle("A{$rowStart}:D{$rowStart}")
+              ->getFont()->setBold(true);
+
+        // ===============================
+        // DATA SISWA
+        // ===============================
+        $row = $rowStart + 1;
         $no = 1;
 
         foreach ($siswa as $s) {
+
+            if ($s->status_verval == 1) {
+                $status = 'Valid';
+            } elseif ($s->status_verval == 2) {
+                $status = 'Perlu Perbaikan';
+            } else {
+                $status = 'Belum Verval';
+            }
+
             $sheet->setCellValue("A{$row}", $no++);
             $sheet->setCellValue("B{$row}", $s->nisn);
             $sheet->setCellValue("C{$row}", $s->nama);
-            $sheet->setCellValue("D{$row}", $s->status_verval == 1 ? 'Sudah' : 'Belum');
+            $sheet->setCellValue("D{$row}", $status);
             $row++;
         }
 
-        // Auto width
         foreach (range('A','D') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
@@ -270,5 +285,96 @@ public function export_excel()
     $writer->save('php://output');
     exit;
 }
+
+public function set($id, $status)
+{
+    // proteksi dasar
+    if (!in_array($status, ['0','1'])) {
+        show_error('Status tidak valid');
+    }
+
+    $this->db->where('id', $id)->update('siswa', [
+        'status_verval' => $status,
+        'verval_by'     => $this->session->userdata('user_id'),
+        'verval_at'     => date('Y-m-d H:i:s')
+    ]);
+
+    redirect('verval/siswa');
+}
+public function berkas()
+{
+    echo '<pre>';
+    print_r($_POST);
+    exit;
+
+    if ($this->input->method() !== 'post') {
+        redirect('verval/siswa');
+        exit;
+    }
+
+    $id      = $this->input->post('id', true);
+    $status  = $this->input->post('status', true);
+    $catatan = $this->input->post('catatan', true);
+
+    if (empty($id) || !in_array($status, ['0','1'])) {
+        show_error('Data tidak valid');
+    }
+
+    $data = [
+        'status_berkas' => (int)$status,
+        'verval_by'     => $this->session->userdata('user_id'),
+        'verval_at'     => date('Y-m-d H:i:s')
+    ];
+
+    if ($status == '0') {
+        $data['catatan_perbaikan'] = $catatan;
+    } else {
+        $data['catatan_perbaikan'] = null;
+    }
+
+    $this->db->where('id', $id)->update('siswa', $data);
+
+    redirect('verval/siswa');
+}
+public function valid($id)
+{
+    $this->db->where('id', $id)
+             ->update('siswa', [
+                 'status_verval' => 1,
+                 'catatan_verval' => null
+             ]);
+
+    $redirect = $this->input->get('redirect') ?? $this->input->server('HTTP_REFERER');
+
+    redirect($redirect ?: 'verval/siswa');
+}
+
+
+public function perbaikan()
+{
+    $id = $this->input->post('id_siswa');
+
+    $this->db->where('id', $id)
+             ->update('siswa', [
+                 'status_verval' => 2,
+                 'catatan_verval' => $this->input->post('catatan')
+             ]);
+
+    $redirect = $this->input->post('redirect_url');
+    redirect($redirect ?: 'verval/siswa');
+}
+
+public function reset($id)
+{
+    $this->db->where('id', $id)
+             ->update('siswa', [
+                 'status_verval' => 0,
+                 'catatan_verval' => null
+             ]);
+
+    redirect($this->input->server('HTTP_REFERER'));
+}
+
+
 }
 
