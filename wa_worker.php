@@ -15,8 +15,8 @@ while (true) {
         $data = json_decode($line, true);
 
         // kirim ke server WA kamu
-        $url = "http://192.168.110.250:3000/send";
-        $token = "RAHASIA-123";
+        $url = "ip wa kamu get kirim pesan"; //ipwakamu
+        $token = ""; //token kamu
 
         $payload = json_encode([
             "number" => $data['number'],
