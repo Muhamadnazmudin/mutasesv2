@@ -199,7 +199,7 @@ input[readonly] {
                                    value="<?= $siswa->jk ?>"
                                    maxlength="1"
                                    oninput="this.value = this.value.toUpperCase().replace(/[^LP]/g,'');"
-                                   placeholder="L / P">
+                                   placeholder="L / P" readonly>
                         </td>
                     </tr>
 
@@ -215,34 +215,32 @@ input[readonly] {
 
                     <tr>
     <td class="bio-label">Tanggal Lahir</td>
-    <td>
-
-        <?php
-            // convert 2009-01-02 -> 02-01-2009
-            $tgl_display = "";
-            if (!empty($siswa->tgl_lahir)) {
-                $exp = explode("-", $siswa->tgl_lahir);
-                if (count($exp) == 3) {
-                    $tgl_display = $exp[2] . "-" . $exp[1] . "-" . $exp[0];
-                }
+<td>
+    <?php
+        $tgl_display = "";
+        if (!empty($siswa->tgl_lahir)) {
+            $exp = explode("-", $siswa->tgl_lahir);
+            if (count($exp) == 3) {
+                $tgl_display = $exp[2] . "-" . $exp[1] . "-" . $exp[0];
             }
-        ?>
+        }
+    ?>
 
-        <input 
-            type="text" 
-            id="tgl_lahir_display" 
-            class="form-control"
-            value="<?= $tgl_display ?>"
-            placeholder="dd-mm-yyyy"
-            autocomplete="off">
+    <!-- DISPLAY (BENAR-BENAR TERKUNCI) -->
+    <input 
+        type="text"
+        class="form-control"
+        value="<?= $tgl_display ?>"
+        disabled
+        style="background:#f8f9fa; cursor:not-allowed;"
+    >
 
-        <input type="hidden" 
-               name="tgl_lahir" 
-               id="tgl_lahir"
-               value="<?= $siswa->tgl_lahir ?>">
-    </td>
-</tr>
-
+    <!-- VALUE ASLI UNTUK SUBMIT -->
+    <input 
+        type="hidden" 
+        name="tgl_lahir" 
+        value="<?= $siswa->tgl_lahir ?>">
+</td>
 
                     <tr>
                         <td class="bio-label">Nomor KK</td>
@@ -346,7 +344,7 @@ input[readonly] {
                 <!-- F. DATA IBU KANDUNG -->
                 <div class="section-title">F. DATA IBU KANDUNG</div>
                 <table class="table bio-table">
-                    <tr><td class="bio-label">Nama Ibu</td><td><input type="text" name="nama_ibu" value="<?= $siswa->nama_ibu ?>"></td></tr>
+                    <tr><td class="bio-label">Nama Ibu</td><td><input type="text" name="nama_ibu" value="<?= $siswa->nama_ibu ?>"readonly></td></tr>
                     <tr><td class="bio-label">NIK Ibu</td><td><input type="text" name="nik_ibu" value="<?= $siswa->nik_ibu ?>"></td></tr>
                     <tr><td class="bio-label">Tahun Lahir Ibu</td><td><input type="text" name="tahun_lahir_ibu" value="<?= $siswa->tahun_lahir_ibu ?>"></td></tr>
 
